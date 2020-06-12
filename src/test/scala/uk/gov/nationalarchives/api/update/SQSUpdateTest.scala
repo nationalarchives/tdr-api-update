@@ -1,11 +1,11 @@
-package uk.gov.nationalarchives.api.update.common
+package uk.gov.nationalarchives.api.update
 
 import org.mockito.ArgumentMatchers._
 import org.mockito.{ArgumentCaptor, Mockito, MockitoSugar}
 import org.scalatest.matchers.should.Matchers._
 import software.amazon.awssdk.services.sqs.SqsClient
 import software.amazon.awssdk.services.sqs.model.{DeleteMessageRequest, DeleteMessageResponse}
-import uk.gov.nationalarchives.api.update.common.utils.ExternalServicesTest
+import uk.gov.nationalarchives.api.update.utils.ExternalServicesTest
 
 class SQSUpdateTest extends ExternalServicesTest with MockitoSugar  {
   "The deleteMessage method" should "delete a message" in {

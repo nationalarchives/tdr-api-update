@@ -1,4 +1,4 @@
-package uk.gov.nationalarchives.api.update.common
+package uk.gov.nationalarchives.api.update
 
 import com.nimbusds.oauth2.sdk.token.BearerAccessToken
 import com.typesafe.config.ConfigFactory
@@ -13,7 +13,7 @@ import sangria.ast.Document
 import sttp.client.{HttpError, Response}
 import sttp.model.StatusCode
 import uk.gov.nationalarchives.api.update.common.utils.TestGraphQLObjects.{Data, TestResponse, Variables}
-import uk.gov.nationalarchives.api.update.common.utils.ExternalServicesTest
+import uk.gov.nationalarchives.api.update.utils.ExternalServicesTest
 import uk.gov.nationalarchives.tdr.GraphQLClient.Extensions
 import uk.gov.nationalarchives.tdr.error.{GraphQlError, HttpException}
 import uk.gov.nationalarchives.tdr.keycloak.KeycloakUtils

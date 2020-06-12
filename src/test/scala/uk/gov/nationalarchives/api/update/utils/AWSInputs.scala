@@ -1,4 +1,4 @@
-package uk.gov.nationalarchives.api.update.common.utils
+package uk.gov.nationalarchives.api.update.utils
 
 import java.util.Base64
 

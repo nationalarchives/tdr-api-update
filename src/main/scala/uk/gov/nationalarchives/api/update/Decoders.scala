@@ -1,4 +1,4 @@
-package uk.gov.nationalarchives.api.update.common
+package uk.gov.nationalarchives.api.update
 
 import graphql.codegen.types.{AddAntivirusMetadataInput, AddFileMetadataInput}
 import graphql.codegen.AddAntivirusMetadata.AddAntivirusMetadata

@@ -1,4 +1,4 @@
-package uk.gov.nationalarchives.api.update.common
+package uk.gov.nationalarchives.api.update
 
 import com.amazonaws.services.lambda.runtime.Context
 import com.amazonaws.services.lambda.runtime.events.SQSEvent

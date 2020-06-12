@@ -1,4 +1,4 @@
-package uk.gov.nationalarchives.api.update.common
+package uk.gov.nationalarchives.api.update
 
 import sangria.ast.Document
 import uk.gov.nationalarchives.tdr.error.NotAuthorisedError

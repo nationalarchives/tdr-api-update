@@ -1,11 +1,11 @@
-package uk.gov.nationalarchives.api.update.common
+package uk.gov.nationalarchives.api.update
 
 import com.github.tomakehurst.wiremock.client.WireMock.{equalTo, equalToJson, postRequestedFor, urlEqualTo}
 import org.scalatest.matchers.should.Matchers._
 import org.scalatest.prop.TableDrivenPropertyChecks
 import software.amazon.awssdk.services.sqs.model.{ReceiveMessageRequest, SendMessageRequest}
-import uk.gov.nationalarchives.api.update.common.utils.AWSInputs._
-import uk.gov.nationalarchives.api.update.common.utils.ExternalServicesTest
+import uk.gov.nationalarchives.api.update.utils.AWSInputs._
+import uk.gov.nationalarchives.api.update.utils.ExternalServicesTest
 
 import scala.io.Source.fromResource
 import scala.util.Try

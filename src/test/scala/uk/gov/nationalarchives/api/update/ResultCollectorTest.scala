@@ -1,11 +1,11 @@
-package uk.gov.nationalarchives.api.update.common
+package uk.gov.nationalarchives.api.update
 
 import org.mockito.MockitoSugar
 import org.scalatest.EitherValues
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.matchers.should.Matchers._
-import uk.gov.nationalarchives.api.update.common.utils.ExternalServicesTest
 import io.circe
+import uk.gov.nationalarchives.api.update.utils.ExternalServicesTest
 
 import scala.concurrent.Future
 
