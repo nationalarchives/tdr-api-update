@@ -52,7 +52,7 @@ pipeline {
                                 sh("git push origin ${versionTag}")
                             }
                             build(
-                                    job: "TDR Backend Checks Deploy",
+                                    job: "TDR Api Update Deploy",
                                     parameters: [
                                             string(name: "STAGE", value: "intg"),
                                             string(name: "TO_DEPLOY", value: versionTag)
