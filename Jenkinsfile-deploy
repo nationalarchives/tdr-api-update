@@ -17,7 +17,7 @@ pipeline {
             steps {
                 script {
                     def accountNumber = getAccountNumberFromStage()
-                    sh "python3 /deploy_lambda_from_s3.py ${accountNumber} ${params.STAGE} tdr-api-update-antivirus-${params.STAGE} tdr-backend-code-mgmt ${params.TO_DEPLOY}/api-update.jar"
+                    sh "python3 /deploy_lambda_from_s3.py ${accountNumber} ${params.STAGE} tdr-api-update-${params.STAGE} tdr-backend-code-mgmt ${params.TO_DEPLOY}/api-update.jar"
                 }
             }
         }
