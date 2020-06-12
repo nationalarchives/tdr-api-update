@@ -5,15 +5,12 @@ import com.typesafe.config.ConfigFactory
 import org.mockito.ArgumentMatchers._
 import org.mockito.MockitoSugar
 import org.scalatest.EitherValues
-import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.concurrent.ScalaFutures.scaled
 import org.scalatest.matchers.should.Matchers._
-import org.scalatest.time.{Millis, Seconds, Span}
 import sangria.ast.Document
 import sttp.client.{HttpError, Response}
 import sttp.model.StatusCode
-import uk.gov.nationalarchives.api.update.common.utils.TestGraphQLObjects.{Data, TestResponse, Variables}
 import uk.gov.nationalarchives.api.update.utils.ExternalServicesTest
+import uk.gov.nationalarchives.api.update.utils.TestGraphQLObjects.{Data, TestResponse, Variables}
 import uk.gov.nationalarchives.tdr.GraphQLClient.Extensions
 import uk.gov.nationalarchives.tdr.error.{GraphQlError, HttpException}
 import uk.gov.nationalarchives.tdr.keycloak.KeycloakUtils
@@ -96,7 +93,7 @@ class ApiUpdateTest extends ExternalServicesTest with MockitoSugar with EitherVa
     when(client.getResult(any[BearerAccessToken], any[Document], any[Option[Variables]])).thenThrow(new HttpException(response))
 
     val res: Either[String, Data] = ApiUpdate().send(keycloakUtils, client, document, variables).futureValue
-    res.left.value shouldEqual("Unexpected response from GraphQL API: Response(Left(Graphql error),503,,List(),List())")
+    res.left.value shouldEqual "Unexpected response from GraphQL API: Response(Left(Graphql error),503,,List(),List())"
   }
 
   "The send method" should "error if the graphql query returns not authorised errors" in {
@@ -116,7 +113,7 @@ class ApiUpdateTest extends ExternalServicesTest with MockitoSugar with EitherVa
 
     val res = ApiUpdate().send(keycloakUtils, client, document, variables).futureValue
 
-    res.left.value shouldEqual("Not authorised message")
+    res.left.value shouldEqual "Not authorised message"
   }
 
   "The send method" should "error if the graphql query returns a general error" in {
@@ -135,6 +132,6 @@ class ApiUpdateTest extends ExternalServicesTest with MockitoSugar with EitherVa
       .thenReturn(Future.successful(graphqlResponse))
 
     val res = ApiUpdate().send(keycloakUtils, client, document, variables).futureValue
-    res.left.value shouldEqual("GraphQL response contained errors: General error")
+    res.left.value shouldEqual "GraphQL response contained errors: General error"
   }
 }

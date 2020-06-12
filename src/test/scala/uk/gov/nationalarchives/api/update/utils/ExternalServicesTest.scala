@@ -4,6 +4,7 @@ import java.net.URI
 
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock._
+import com.github.tomakehurst.wiremock.stubbing.StubMapping
 import io.findify.sqsmock.SQSService
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.flatspec.AnyFlatSpec
@@ -37,15 +38,15 @@ class ExternalServicesTest extends AnyFlatSpec with BeforeAndAfterEach with Befo
 
   def graphQlUrl: String = wiremockGraphqlServer.url(graphQlPath)
 
-  def graphqlOkJson(jsonLocation: String) = wiremockGraphqlServer.stubFor(post(urlEqualTo(graphQlPath))
+  def graphqlOkJson(jsonLocation: String): StubMapping = wiremockGraphqlServer.stubFor(post(urlEqualTo(graphQlPath))
     .willReturn(okJson(fromResource(s"json/$jsonLocation.json").mkString)))
 
-  def authOkJson(jsonLocation: String) = wiremockAuthServer.stubFor(post(urlEqualTo(authPath))
+  def authOkJson(jsonLocation: String): StubMapping = wiremockAuthServer.stubFor(post(urlEqualTo(authPath))
     .willReturn(okJson(fromResource(s"json/$jsonLocation.json").mkString)))
 
-  def authUnavailable = wiremockAuthServer.stubFor(post(urlEqualTo(authPath)).willReturn(serverError()))
+  def authUnavailable: StubMapping = wiremockAuthServer.stubFor(post(urlEqualTo(authPath)).willReturn(serverError()))
 
-  def graphqlUnavailable = wiremockGraphqlServer.stubFor(post(urlEqualTo(graphQlPath)).willReturn(serverError()))
+  def graphqlUnavailable: StubMapping = wiremockGraphqlServer.stubFor(post(urlEqualTo(graphQlPath)).willReturn(serverError()))
 
   def client: SqsClient = SqsClient.builder()
     .region(Region.EU_WEST_2)

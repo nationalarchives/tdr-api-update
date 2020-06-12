@@ -1,10 +1,5 @@
 package uk.gov.nationalarchives.api.update
 
-import java.net.URI
-
-import com.typesafe.config.ConfigFactory
-import software.amazon.awssdk.http.apache.ApacheHttpClient
-import software.amazon.awssdk.regions.Region
 import software.amazon.awssdk.services.sqs.SqsClient
 import software.amazon.awssdk.services.sqs.model.DeleteMessageRequest
 

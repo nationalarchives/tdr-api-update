@@ -12,7 +12,7 @@ import scala.jdk.CollectionConverters._
 
 object AWSInputs extends MockitoSugar {
 
-  val context = mock[Context]
+  val context: Context = mock[Context]
   def sqsEvent(jsonLocations: String*): SQSEvent = {
     val event = new SQSEvent()
     val records: Seq[SQSMessage] = jsonLocations.indices.map(i => {

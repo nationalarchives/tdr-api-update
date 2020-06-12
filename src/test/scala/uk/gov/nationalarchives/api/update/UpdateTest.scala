@@ -12,7 +12,7 @@ import scala.util.Try
 
 class UpdateTest extends ExternalServicesTest with TableDrivenPropertyChecks {
 
-  def verifyWiremockResponse(fileName: String) = {
+  def verifyWiremockResponse(fileName: String): Unit = {
     wiremockGraphqlServer.verify(postRequestedFor(urlEqualTo(graphQlPath))
       .withRequestBody(equalToJson(fromResource(s"json/$fileName.json").mkString))
       .withHeader("Authorization", equalTo("Bearer token")))
@@ -25,7 +25,7 @@ class UpdateTest extends ExternalServicesTest with TableDrivenPropertyChecks {
       "checksum"
     )
 
-  forAll(updateTypes) { (updateType) => {
+  forAll(updateTypes) { updateType => {
     "The update method" should s"call the graphql api with a single record with a single $updateType update" in {
       authOkJson("access_token")
       graphqlOkJson(s"graphql_valid_${updateType}_response")
