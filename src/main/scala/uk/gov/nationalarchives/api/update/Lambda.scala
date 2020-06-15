@@ -2,7 +2,7 @@ package uk.gov.nationalarchives.api.update
 
 import com.amazonaws.services.lambda.runtime.Context
 import com.amazonaws.services.lambda.runtime.events.SQSEvent
-import graphql.codegen.AddAntivirusMetadata.{AddAntivirusMetadata => av}
+import graphql.codegen.AddAntivirusMetadata.{AddAntivirusMetadata => avm}
 import graphql.codegen.AddFileMetadata.{addFileMetadata => afm}
 import graphql.codegen.types.{AddAntivirusMetadataInput, AddFileMetadataInput}
 import Decoders._
@@ -24,7 +24,7 @@ class Lambda {
       .map(bodyWithReceiptHandle => {
         decode[Serializable](bodyWithReceiptHandle.body).map {
           case avInput: AddAntivirusMetadataInput =>
-            val processor = new Processor[AddAntivirusMetadataInput, av.Data, av.Variables](av.document, i => av.Variables(i))
+            val processor = new Processor[AddAntivirusMetadataInput, avm.Data, avm.Variables](avm.document, i => avm.Variables(i))
             processor.process(avInput, bodyWithReceiptHandle.recieptHandle)
           case fileMetadataInput: AddFileMetadataInput =>
             println(s"file property name ${fileMetadataInput.filePropertyName}")
