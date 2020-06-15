@@ -34,7 +34,5 @@ class Lambda {
       }).toList
 
     Await.result(ResultCollector().collect(results), 10 seconds)
-
-
   }
 }

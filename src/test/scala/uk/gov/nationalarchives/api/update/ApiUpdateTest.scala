@@ -33,7 +33,6 @@ class ApiUpdateTest extends ExternalServicesTest with MockitoSugar with EitherVa
       .thenReturn(Future.successful(GraphQlResponse(Some(Data(TestResponse())), List())))
     apiUpdate.send(keycloakUtils, client, document, Variables()).futureValue
 
-
     val configFactory = ConfigFactory.load
     val expectedId = configFactory.getString("client.id")
     val expectedSecret = configFactory.getString("client.secret")
@@ -73,7 +72,6 @@ class ApiUpdateTest extends ExternalServicesTest with MockitoSugar with EitherVa
       ApiUpdate().send(keycloakUtils, client, document, variables).futureValue
     }
     exception.body should equal("An error occurred contacting the auth server")
-
   }
 
   "The send method" should "error if the graphql server is unavailable" in {
