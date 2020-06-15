@@ -8,7 +8,7 @@ pipeline {
         label "master"
     }
     parameters {
-        choice(name: "STAGE", choices: ["intg", "staging", "prod"], description: "The stage you are building the front end for")
+        choice(name: "STAGE", choices: ["intg", "staging", "prod"], description: "The stage you are building the api update lambda for")
     }
     stages {
         stage("Build") {
