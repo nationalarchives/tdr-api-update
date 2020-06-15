@@ -81,7 +81,5 @@ class ExternalServicesTest extends AnyFlatSpec with BeforeAndAfterEach with Befo
       client.deleteMessage(DeleteMessageRequest.builder.queueUrl(queueUrl).receiptHandle(msg.receiptHandle).build())
     })
   }
-
-
 }
 

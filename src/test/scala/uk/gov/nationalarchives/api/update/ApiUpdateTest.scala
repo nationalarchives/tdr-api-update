@@ -57,7 +57,6 @@ class ApiUpdateTest extends ExternalServicesTest with MockitoSugar with EitherVa
     apiUpdate.send(keycloakUtils, client, document, variables).futureValue
 
     verify(client).getResult(new BearerAccessToken("token"), document, Some(variables))
-
   }
 
   "The send method" should "error if the auth server is unavailable" in {
