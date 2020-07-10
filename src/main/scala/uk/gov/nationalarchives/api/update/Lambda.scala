@@ -4,7 +4,8 @@ import com.amazonaws.services.lambda.runtime.Context
 import com.amazonaws.services.lambda.runtime.events.SQSEvent
 import graphql.codegen.AddAntivirusMetadata.{AddAntivirusMetadata => avm}
 import graphql.codegen.AddFileMetadata.{addFileMetadata => afm}
-import graphql.codegen.types.{AddAntivirusMetadataInput, AddFileMetadataInput}
+import graphql.codegen.AddFFIDMetadata.{addFFIDMetadata => afim}
+import graphql.codegen.types.{AddAntivirusMetadataInput, AddFileMetadataInput, FFIDMetadataInput}
 import Decoders._
 import io.circe
 import io.circe.parser.decode
@@ -30,6 +31,9 @@ class Lambda {
             println(s"file property name ${fileMetadataInput.filePropertyName}")
             val processor = new Processor[AddFileMetadataInput, afm.Data, afm.Variables](afm.document, i => afm.Variables(i))
             processor.process(fileMetadataInput, bodyWithReceiptHandle.recieptHandle)
+          case ffidMetadataInput: FFIDMetadataInput =>
+            val processor = new Processor[FFIDMetadataInput, afim.Data, afim.Variables](afim.document, i => afim.Variables(i))
+            processor.process(ffidMetadataInput, bodyWithReceiptHandle.recieptHandle)
         }
       }).toList
 

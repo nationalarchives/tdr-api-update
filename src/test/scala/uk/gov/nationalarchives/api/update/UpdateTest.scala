@@ -22,7 +22,8 @@ class UpdateTest extends ExternalServicesTest with TableDrivenPropertyChecks {
     Table(
       "updateType",
       "av",
-      "checksum"
+      "checksum",
+      "ffid"
     )
 
   forAll(updateTypes) {
