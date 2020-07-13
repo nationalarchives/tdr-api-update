@@ -39,7 +39,7 @@ class UpdateTest extends ExternalServicesTest with TableDrivenPropertyChecks {
       "The update method" should s"call the graphql api with multiple records with a single $updateType update" in {
         authOkJson("access_token")
         graphqlOkJson(s"graphql_valid_${updateType}_response")
-        new Lambda().update(sqsEvent(s"function_valid_${updateType}_input", s"function_valid_${updateType}_input"), context)
+        new Lambda().update(sqsEvent(s"function_valid_${updateType}_input", s"function_valid_second_${updateType}_input"), context)
         verifyWiremockResponse(s"graphql_valid_${updateType}_multiple_records_expected_1")
         verifyWiremockResponse(s"graphql_valid_${updateType}_multiple_records_expected_2")
       }
