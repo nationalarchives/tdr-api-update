@@ -1,0 +1,20 @@
+{
+  "query": "mutation addFFIDMetadata($addFFIDMetadataInput:FFIDMetadataInput!){addFFIDMetadata(addFFIDMetadataInput:$addFFIDMetadataInput){fileId}}",
+  "variables": {
+    "addFFIDMetadataInput": {
+      "fileId": "942ae85c-5f2a-4d70-b919-f6e14acf3f07",
+      "software": "siegfried",
+      "softwareVersion": "1.7.0",
+      "binarySignatureFileVersion": "DROID_SignatureFile_V97.xml",
+      "containerSignatureFileVersion": " different-signature-20200121.xml",
+      "method": "pronom",
+      "matches": [
+        {
+          "extension": "pdf",
+          "identificationBasis": "extension match pdf;",
+          "puid": "x-fmt/123"
+        }
+      ]
+    }
+  }
+}
