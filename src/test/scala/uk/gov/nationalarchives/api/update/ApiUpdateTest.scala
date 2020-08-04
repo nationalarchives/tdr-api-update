@@ -7,7 +7,7 @@ import org.mockito.MockitoSugar
 import org.scalatest.EitherValues
 import org.scalatest.matchers.should.Matchers._
 import sangria.ast.Document
-import sttp.client.{HttpError, Response}
+import sttp.client.{HttpError, HttpURLConnectionBackend, Identity, NothingT, Response, SttpBackend}
 import sttp.model.StatusCode
 import uk.gov.nationalarchives.api.update.utils.ExternalServicesTest
 import uk.gov.nationalarchives.api.update.utils.TestGraphQLObjects.{Data, TestResponse, Variables}
@@ -17,8 +17,10 @@ import uk.gov.nationalarchives.tdr.keycloak.KeycloakUtils
 import uk.gov.nationalarchives.tdr.{GraphQLClient, GraphQlResponse}
 
 import scala.concurrent.Future
+import scala.reflect.ClassTag
 
 class ApiUpdateTest extends ExternalServicesTest with MockitoSugar with EitherValues {
+  implicit val backend: SttpBackend[Identity, Nothing, NothingT] = HttpURLConnectionBackend()
 
   "The send method" should "request a service account token" in {
     val apiUpdate = ApiUpdate()
@@ -27,9 +29,9 @@ class ApiUpdateTest extends ExternalServicesTest with MockitoSugar with EitherVa
     val document = mock[Document]
     val keycloakUtils = mock[KeycloakUtils]
 
-    when(keycloakUtils.serviceAccountToken(any[String], any[String]))
+    when(keycloakUtils.serviceAccountToken[Identity](any[String], any[String])(any[SttpBackend[Identity, Nothing, NothingT]], any[ClassTag[Identity[_]]]))
       .thenReturn(Future.successful(new BearerAccessToken("token")))
-    when(client.getResult(any[BearerAccessToken], any[Document], any[Option[Variables]]))
+    when(client.getResult[Identity](any[BearerAccessToken], any[Document], any[Option[Variables]])(any[SttpBackend[Identity, Nothing, NothingT]], any[ClassTag[Identity[_]]]))
       .thenReturn(Future.successful(GraphQlResponse(Some(Data(TestResponse())), List())))
     apiUpdate.send(keycloakUtils, client, document, Variables()).futureValue
 
@@ -49,9 +51,9 @@ class ApiUpdateTest extends ExternalServicesTest with MockitoSugar with EitherVa
 
     val variables = Variables()
 
-    when(keycloakUtils.serviceAccountToken(any[String], any[String]))
+    when(keycloakUtils.serviceAccountToken[Identity](any[String], any[String])(any[SttpBackend[Identity, Nothing, NothingT]], any[ClassTag[Identity[_]]]))
       .thenReturn(Future.successful(new BearerAccessToken("token")))
-    when(client.getResult(any[BearerAccessToken], any[Document], any[Option[Variables]]))
+    when(client.getResult[Identity](any[BearerAccessToken], any[Document], any[Option[Variables]])(any[SttpBackend[Identity, Nothing, NothingT]], any[ClassTag[Identity[_]]]))
       .thenReturn(Future.successful(GraphQlResponse(Some(Data(TestResponse())), List())))
     apiUpdate.send(keycloakUtils, client, document, variables).futureValue
 
@@ -65,7 +67,7 @@ class ApiUpdateTest extends ExternalServicesTest with MockitoSugar with EitherVa
 
     val variables = Variables()
 
-    when(keycloakUtils.serviceAccountToken(any[String], any[String]))
+    when(keycloakUtils.serviceAccountToken[Identity](any[String], any[String])(any[SttpBackend[Identity, Nothing, NothingT]], any[ClassTag[Identity[_]]]))
       .thenThrow(HttpError("An error occurred contacting the auth server"))
 
     val exception = intercept[HttpError] {
@@ -85,9 +87,9 @@ class ApiUpdateTest extends ExternalServicesTest with MockitoSugar with EitherVa
 
     val response = Response(body, StatusCode.ServiceUnavailable)
 
-    when(keycloakUtils.serviceAccountToken(any[String], any[String]))
+    when(keycloakUtils.serviceAccountToken[Identity](any[String], any[String])(any[SttpBackend[Identity, Nothing, NothingT]], any[ClassTag[Identity[_]]]))
       .thenReturn(Future.successful(new BearerAccessToken("token")))
-    when(client.getResult(any[BearerAccessToken], any[Document], any[Option[Variables]])).thenThrow(new HttpException(response))
+    when(client.getResult[Identity](any[BearerAccessToken], any[Document], any[Option[Variables]])(any[SttpBackend[Identity, Nothing, NothingT]], any[ClassTag[Identity[_]]])).thenThrow(new HttpException(response))
 
     val res: Either[String, Data] = ApiUpdate().send(keycloakUtils, client, document, variables).futureValue
     res.left.value shouldEqual "Unexpected response from GraphQL API: Response(Left(Graphql error),503,,List(),List())"
@@ -100,12 +102,12 @@ class ApiUpdateTest extends ExternalServicesTest with MockitoSugar with EitherVa
 
     val variables = Variables()
 
-    when(keycloakUtils.serviceAccountToken(any[String], any[String]))
+    when(keycloakUtils.serviceAccountToken[Identity](any[String], any[String])(any[SttpBackend[Identity, Nothing, NothingT]], any[ClassTag[Identity[_]]]))
       .thenReturn(Future.successful(new BearerAccessToken("token")))
     val graphqlResponse: GraphQlResponse[Data] =
       GraphQlResponse(Option.empty, List(GraphQlError(GraphQLClient.Error("Not authorised message",
         List(), List(), Some(Extensions(Some("NOT_AUTHORISED")))))))
-    when(client.getResult(any[BearerAccessToken], any[Document], any[Option[Variables]]))
+    when(client.getResult[Identity](any[BearerAccessToken], any[Document], any[Option[Variables]])(any[SttpBackend[Identity, Nothing, NothingT]], any[ClassTag[Identity[_]]]))
       .thenReturn(Future.successful(graphqlResponse))
 
     val res = ApiUpdate().send(keycloakUtils, client, document, variables).futureValue
@@ -120,12 +122,12 @@ class ApiUpdateTest extends ExternalServicesTest with MockitoSugar with EitherVa
 
     val variables = Variables()
 
-    when(keycloakUtils.serviceAccountToken(any[String], any[String]))
+    when(keycloakUtils.serviceAccountToken[Identity](any[String], any[String])(any[SttpBackend[Identity, Nothing, NothingT]], any[ClassTag[Identity[_]]]))
       .thenReturn(Future.successful(new BearerAccessToken("token")))
     val graphqlResponse: GraphQlResponse[Data] =
       GraphQlResponse(Option.empty, List(GraphQlError(GraphQLClient.Error("General error",
         List(), List(), Option.empty))))
-    when(client.getResult(any[BearerAccessToken], any[Document], any[Option[Variables]]))
+    when(client.getResult[Identity](any[BearerAccessToken], any[Document], any[Option[Variables]])(any[SttpBackend[Identity, Nothing, NothingT]], any[ClassTag[Identity[_]]]))
       .thenReturn(Future.successful(graphqlResponse))
 
     val res = ApiUpdate().send(keycloakUtils, client, document, variables).futureValue
