@@ -1,16 +1,17 @@
 package uk.gov.nationalarchives.api.update
 
+import com.typesafe.config.ConfigFactory
 import sangria.ast.Document
+import sttp.client.{Identity, NothingT, SttpBackend}
 import uk.gov.nationalarchives.tdr.error.NotAuthorisedError
 import uk.gov.nationalarchives.tdr.keycloak.KeycloakUtils
 import uk.gov.nationalarchives.tdr.{GraphQLClient, GraphQlResponse}
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.language.postfixOps
-import com.typesafe.config.ConfigFactory
 
 
-class ApiUpdate()(implicit val executionContext: ExecutionContext) {
+class ApiUpdate()(implicit val executionContext: ExecutionContext, backend: SttpBackend[Identity, Nothing, NothingT]) {
 
   def send[D, V](keycloakUtils: KeycloakUtils, client: GraphQLClient[D, V], document: Document, variables: V): Future[Either[String, D]] = {
     val configFactory = ConfigFactory.load
@@ -33,5 +34,5 @@ class ApiUpdate()(implicit val executionContext: ExecutionContext) {
 }
 
 object ApiUpdate {
-  def apply()(implicit executionContext: ExecutionContext): ApiUpdate = new ApiUpdate()(executionContext)
+  def apply()(implicit executionContext: ExecutionContext, backend: SttpBackend[Identity, Nothing, NothingT]): ApiUpdate = new ApiUpdate()(executionContext, backend)
 }

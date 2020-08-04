@@ -11,15 +11,16 @@ import sangria.ast.Document
 import software.amazon.awssdk.http.apache.ApacheHttpClient
 import software.amazon.awssdk.regions.Region
 import software.amazon.awssdk.services.sqs.SqsClient
+import sttp.client.{HttpURLConnectionBackend, Identity, NothingT, SttpBackend}
 import uk.gov.nationalarchives.tdr.GraphQLClient
 import uk.gov.nationalarchives.tdr.keycloak.KeycloakUtils
 
-import scala.concurrent.duration._
 import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.language.postfixOps
-import scala.concurrent.duration._
+
 
 class Processor[Input, Data, Variables](document: Document, variablesFn: Input => Variables)(implicit val excecutionContext: ExecutionContext, val decoder: Decoder[Input], val dataDecoder: Decoder[Data], val variablesEncoder: Encoder[Variables]) {
+  implicit val backend: SttpBackend[Identity, Nothing, NothingT] = HttpURLConnectionBackend()
   val configFactory: Config = ConfigFactory.load
   val client = new GraphQLClient[Data, Variables](configFactory.getString("url.api"))
   val apiUpdate: ApiUpdate = ApiUpdate()
