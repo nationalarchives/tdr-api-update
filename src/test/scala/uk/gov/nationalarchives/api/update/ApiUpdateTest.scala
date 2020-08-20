@@ -68,7 +68,7 @@ class ApiUpdateTest extends ExternalServicesTest with MockitoSugar with EitherVa
     val variables = Variables()
 
     when(keycloakUtils.serviceAccountToken[Identity](any[String], any[String])(any[SttpBackend[Identity, Nothing, NothingT]], any[ClassTag[Identity[_]]]))
-      .thenThrow(HttpError("An error occurred contacting the auth server"))
+      .thenThrow(HttpError("An error occurred contacting the auth server", StatusCode.InternalServerError))
 
     val exception = intercept[HttpError] {
       ApiUpdate().send(keycloakUtils, client, document, variables).futureValue
