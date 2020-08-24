@@ -26,7 +26,7 @@ pipeline {
       }
       steps {
         script {
-          tdr.reportStartOfBuildToGitHub(repo)
+          tdr.reportStartOfBuildToGitHub(repo, env.GIT_COMMIT)
         }
         sh "sbt -no-colors assembly"
         stash includes: "target/scala-2.13/api-update.jar", name: "api-update-jar"
@@ -73,12 +73,12 @@ pipeline {
   post {
     failure {
       script {
-        tdr.reportFailedBuildToGitHub(repo)
+        tdr.reportFailedBuildToGitHub(repo, env.GIT_COMMIT)
       }
     }
     success {
       script {
-        tdr.reportSuccessfulBuildToGitHub(repo)
+        tdr.reportSuccessfulBuildToGitHub(repo, env.GIT_COMMIT)
       }
     }
   }
