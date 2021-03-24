@@ -19,12 +19,12 @@ import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.language.postfixOps
 
 
-class Processor[Input, Data, Variables](document: Document, variablesFn: Input => Variables)(implicit val excecutionContext: ExecutionContext, val decoder: Decoder[Input], val dataDecoder: Decoder[Data], val variablesEncoder: Encoder[Variables]) {
+class Processor[Input, Data, Variables](document: Document, variablesFn: Input => Variables, config: Map[String, String])(implicit val excecutionContext: ExecutionContext, val decoder: Decoder[Input], val dataDecoder: Decoder[Data], val variablesEncoder: Encoder[Variables]) {
   implicit val backend: SttpBackend[Identity, Nothing, NothingT] = HttpURLConnectionBackend()
   val configFactory: Config = ConfigFactory.load
-  val client = new GraphQLClient[Data, Variables](configFactory.getString("url.api"))
-  val apiUpdate: ApiUpdate = ApiUpdate()
-  val keycloakUtils: KeycloakUtils = KeycloakUtils(configFactory.getString("url.auth"))
+  val client = new GraphQLClient[Data, Variables](config("url.api"))
+  val apiUpdate: ApiUpdate = ApiUpdate(config)
+  val keycloakUtils: KeycloakUtils = KeycloakUtils(config("url.auth"))
   val sqsClient: SqsClient = SqsClient.builder()
     .region(Region.EU_WEST_2)
     .endpointOverride(new URI(configFactory.getString("sqs.endpoint")))
@@ -35,7 +35,7 @@ class Processor[Input, Data, Variables](document: Document, variablesFn: Input =
     val response: Future[Either[String, Data]] =
       apiUpdate.send[Data, Variables](keycloakUtils, client, document, variablesFn(input))
     response.map(_.map(_ => {
-      SQSUpdate(sqsClient).deleteSqsMessage(configFactory.getString("sqs.url"), receiptHandle)
+      SQSUpdate(sqsClient).deleteSqsMessage(config("sqs.url"), receiptHandle)
       s"$input was successful"
     }))
   }

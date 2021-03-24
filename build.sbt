@@ -15,6 +15,7 @@ libraryDependencies ++= Seq(
   lambdaCore,
   lambdaEvents,
   authUtils,
+  awsUtils,
   sqs,
   typesafe,
   mockito % Test,

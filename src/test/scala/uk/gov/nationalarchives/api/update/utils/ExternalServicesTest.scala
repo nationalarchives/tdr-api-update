@@ -24,6 +24,12 @@ class ExternalServicesTest extends AnyFlatSpec with BeforeAndAfterEach with Befo
 
   val wiremockGraphqlServer = new WireMockServer(9001)
   val wiremockAuthServer = new WireMockServer(9002)
+  val wiremockKmsEndpoint = new WireMockServer(9003)
+
+  def stubKmsResponse(cipherText: String): StubMapping =
+    wiremockKmsEndpoint.stubFor(post(urlEqualTo("/"))
+      .withRequestBody(equalToJson(s"""{"CiphertextBlob":"$cipherText","EncryptionContext":{"LambdaFunctionName":"test-lambda-function"}}"""))
+      .willReturn(okJson(s"""{"Plaintext": "$cipherText"}""")))
 
   val port = 8001
   val account = 1
@@ -53,9 +59,18 @@ class ExternalServicesTest extends AnyFlatSpec with BeforeAndAfterEach with Befo
     .endpointOverride(new URI(s"http://localhost:$port"))
     .build()
 
+  override def beforeEach(): Unit = {
+    stubKmsResponse("aHR0cDovL2xvY2FsaG9zdDo5MDAxL2dyYXBocWw=")
+    stubKmsResponse("aHR0cDovL2xvY2FsaG9zdDo5MDAyL2F1dGg=")
+    stubKmsResponse("aWQ=")
+    stubKmsResponse("c2VjcmV0")
+    stubKmsResponse("aHR0cDovL2xvY2FsaG9zdDo4MDAxLzEvdGVzdHF1ZXVl")
+  }
+
   override def beforeAll(): Unit = {
     wiremockGraphqlServer.start()
     wiremockAuthServer.start()
+    wiremockKmsEndpoint.start()
     api.start()
 
     val request = CreateQueueRequest.builder().queueName(queueName).build()
@@ -65,12 +80,14 @@ class ExternalServicesTest extends AnyFlatSpec with BeforeAndAfterEach with Befo
   override def afterAll(): Unit = {
     wiremockGraphqlServer.stop()
     wiremockAuthServer.stop()
+    wiremockKmsEndpoint.stop()
     api.shutdown()
   }
 
   override def afterEach(): Unit = {
     wiremockAuthServer.resetAll()
     wiremockGraphqlServer.resetAll()
+    wiremockKmsEndpoint.resetAll()
     client.receiveMessage(
       ReceiveMessageRequest
         .builder
