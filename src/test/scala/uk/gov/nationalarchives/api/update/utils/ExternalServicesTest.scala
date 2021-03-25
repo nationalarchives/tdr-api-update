@@ -1,9 +1,13 @@
 package uk.gov.nationalarchives.api.update.utils
 
 import java.net.URI
-
 import com.github.tomakehurst.wiremock.WireMockServer
+import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder
 import com.github.tomakehurst.wiremock.client.WireMock._
+import com.github.tomakehurst.wiremock.common.FileSource
+import com.github.tomakehurst.wiremock.core.WireMockConfiguration
+import com.github.tomakehurst.wiremock.extension.{Parameters, ResponseDefinitionTransformer}
+import com.github.tomakehurst.wiremock.http.{Request, ResponseDefinition}
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
 import io.findify.sqsmock.SQSService
 import org.scalatest.concurrent.ScalaFutures
@@ -14,9 +18,13 @@ import software.amazon.awssdk.regions.Region
 import software.amazon.awssdk.services.sqs.SqsClient
 import software.amazon.awssdk.services.sqs.model.{CreateQueueRequest, DeleteMessageRequest, ReceiveMessageRequest}
 
+import java.nio.ByteBuffer
+import java.nio.charset.Charset
 import scala.concurrent.ExecutionContext
 import scala.io.Source.fromResource
 import scala.jdk.CollectionConverters._
+import io.circe.generic.auto._
+import io.circe.parser.decode
 
 class ExternalServicesTest extends AnyFlatSpec with BeforeAndAfterEach with BeforeAndAfterAll with ScalaFutures {
 
@@ -24,12 +32,25 @@ class ExternalServicesTest extends AnyFlatSpec with BeforeAndAfterEach with Befo
 
   val wiremockGraphqlServer = new WireMockServer(9001)
   val wiremockAuthServer = new WireMockServer(9002)
-  val wiremockKmsEndpoint = new WireMockServer(9003)
+  val wiremockKmsEndpoint = new WireMockServer(new WireMockConfiguration().port(9003).extensions(new ResponseDefinitionTransformer {
+    override def transform(request: Request, responseDefinition: ResponseDefinition, files: FileSource, parameters: Parameters): ResponseDefinition = {
+      case class KMSRequest(CiphertextBlob: String)
+      decode[KMSRequest](request.getBodyAsString) match {
+        case Left(err) => throw err
+        case Right(req) =>
+          val charset = Charset.defaultCharset()
+          val plainText = charset.newDecoder.decode(ByteBuffer.wrap(req.CiphertextBlob.getBytes(charset))).toString
+          ResponseDefinitionBuilder
+            .like(responseDefinition)
+            .withBody(s"""{"Plaintext": "$plainText"}""")
+            .build()
+      }
+    }
+    override def getName: String = ""
+  }))
 
-  def stubKmsResponse(cipherText: String): StubMapping =
-    wiremockKmsEndpoint.stubFor(post(urlEqualTo("/"))
-      .withRequestBody(equalToJson(s"""{"CiphertextBlob":"$cipherText","EncryptionContext":{"LambdaFunctionName":"test-lambda-function"}}"""))
-      .willReturn(okJson(s"""{"Plaintext": "$cipherText"}""")))
+  def stubKmsResponse: StubMapping =
+    wiremockKmsEndpoint.stubFor(post(urlEqualTo("/")))
 
   val port = 8001
   val account = 1
@@ -60,11 +81,7 @@ class ExternalServicesTest extends AnyFlatSpec with BeforeAndAfterEach with Befo
     .build()
 
   override def beforeEach(): Unit = {
-    stubKmsResponse("aHR0cDovL2xvY2FsaG9zdDo5MDAxL2dyYXBocWw=")
-    stubKmsResponse("aHR0cDovL2xvY2FsaG9zdDo5MDAyL2F1dGg=")
-    stubKmsResponse("aWQ=")
-    stubKmsResponse("c2VjcmV0")
-    stubKmsResponse("aHR0cDovL2xvY2FsaG9zdDo4MDAxLzEvdGVzdHF1ZXVl")
+    stubKmsResponse
   }
 
   override def beforeAll(): Unit = {
