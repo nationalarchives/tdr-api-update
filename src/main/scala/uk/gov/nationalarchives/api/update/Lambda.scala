@@ -7,7 +7,7 @@ import graphql.codegen.AddFileMetadata.{addFileMetadata => afm}
 import graphql.codegen.AddFFIDMetadata.{addFFIDMetadata => afim}
 import graphql.codegen.types.{AddAntivirusMetadataInput, AddFileMetadataInput, FFIDMetadataInput}
 import Decoders._
-import com.typesafe.config.ConfigFactory
+import com.typesafe.config.{Config, ConfigFactory}
 import io.circe
 import io.circe.parser.decode
 import uk.gov.nationalarchives.aws.utils.Clients.kms
@@ -20,7 +20,8 @@ import scala.jdk.CollectionConverters._
 import scala.concurrent.duration._
 
 class Lambda {
-  val kmsUtils: KMSUtils = KMSUtils(kms, Map("LambdaFunctionName" -> ConfigFactory.load.getString("function.name")))
+  val configFactory: Config = ConfigFactory.load
+  val kmsUtils: KMSUtils = KMSUtils(kms(configFactory.getString("kms.endpoint")), Map("LambdaFunctionName" -> configFactory.getString("function.name")))
   val config: Map[String, String] = kmsUtils.decryptValuesFromConfig(
     List("url.api", "url.auth", "sqs.url", "client.id", "client.secret")
   )
