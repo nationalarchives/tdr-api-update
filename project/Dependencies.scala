@@ -10,7 +10,7 @@ object Dependencies {
   lazy val lambdaEvents = "com.amazonaws" % "aws-lambda-java-events" % "2.2.9"
   lazy val graphqlClient = "uk.gov.nationalarchives" %% "tdr-graphql-client" % "0.0.15"
   lazy val authUtils = "uk.gov.nationalarchives" %% "tdr-auth-utils" % "0.0.19"
-  lazy val awsUtils = "uk.gov.nationalarchives.aws.utils" %% "tdr-aws-utils" % "0.1.15-SNAPSHOT"
+  lazy val awsUtils = "uk.gov.nationalarchives.aws.utils" %% "tdr-aws-utils" % "0.1.15"
   lazy val wiremock = "com.github.tomakehurst" % "wiremock-jre8" % "2.26.0"
   lazy val keycloakMock = "com.tngtech.keycloakmock" % "mock" % "0.3.0"
   lazy val mockito = "org.mockito" %% "mockito-scala" % "1.14.1"
