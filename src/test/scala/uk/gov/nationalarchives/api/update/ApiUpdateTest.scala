@@ -1,7 +1,6 @@
 package uk.gov.nationalarchives.api.update
 
 import com.nimbusds.oauth2.sdk.token.BearerAccessToken
-import com.typesafe.config.ConfigFactory
 import org.mockito.ArgumentMatchers._
 import org.mockito.MockitoSugar
 import org.scalatest.EitherValues

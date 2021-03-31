@@ -1,6 +1,5 @@
 package uk.gov.nationalarchives.api.update
 
-import com.typesafe.config.ConfigFactory
 import sangria.ast.Document
 import sttp.client.{Identity, NothingT, SttpBackend}
 import uk.gov.nationalarchives.tdr.error.NotAuthorisedError
@@ -9,7 +8,6 @@ import uk.gov.nationalarchives.tdr.{GraphQLClient, GraphQlResponse}
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.language.postfixOps
-
 
 class ApiUpdate(config: Map[String, String])(implicit val executionContext: ExecutionContext, backend: SttpBackend[Identity, Nothing, NothingT]) {
 

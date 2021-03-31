@@ -2,10 +2,7 @@ package uk.gov.nationalarchives.api.update
 
 import java.net.URI
 
-import com.amazonaws.services.lambda.runtime.events.SQSEvent
 import com.typesafe.config.{Config, ConfigFactory}
-import io.circe
-import io.circe.parser.decode
 import io.circe.{Decoder, Encoder}
 import sangria.ast.Document
 import software.amazon.awssdk.http.apache.ApacheHttpClient
@@ -17,7 +14,6 @@ import uk.gov.nationalarchives.tdr.keycloak.KeycloakUtils
 
 import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.language.postfixOps
-
 
 class Processor[Input, Data, Variables](document: Document, variablesFn: Input => Variables, config: Map[String, String])(implicit val excecutionContext: ExecutionContext, val decoder: Decoder[Input], val dataDecoder: Decoder[Data], val variablesEncoder: Encoder[Variables]) {
   implicit val backend: SttpBackend[Identity, Nothing, NothingT] = HttpURLConnectionBackend()
