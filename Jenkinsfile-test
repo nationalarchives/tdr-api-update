@@ -49,8 +49,7 @@ pipeline {
           steps {
             script {
               unstash "api-update-jar"
-              sh "cp target/scala-2.13/api-update.jar /"
-              sh "aws s3 cp /api-update.jar s3://tdr-backend-code-mgmt/${versionTag}/api-update.jar"
+              sh "aws s3 cp target/scala-2.13/api-update.jar s3://tdr-backend-code-mgmt/${versionTag}/api-update.jar"
               sh 'git config --global user.email tna-digital-archiving-jenkins@nationalarchives.gov.uk'
               sh 'git config --global user.name tna-digital-archiving-jenkins'
               sh "git tag ${versionTag}"
