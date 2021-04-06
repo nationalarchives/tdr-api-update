@@ -1,6 +1,5 @@
 package uk.gov.nationalarchives.api.update
 
-import com.typesafe.config.ConfigFactory
 import sangria.ast.Document
 import sttp.client.{Identity, NothingT, SttpBackend}
 import uk.gov.nationalarchives.tdr.error.NotAuthorisedError
@@ -10,13 +9,11 @@ import uk.gov.nationalarchives.tdr.{GraphQLClient, GraphQlResponse}
 import scala.concurrent.{ExecutionContext, Future}
 import scala.language.postfixOps
 
-
-class ApiUpdate()(implicit val executionContext: ExecutionContext, backend: SttpBackend[Identity, Nothing, NothingT]) {
+class ApiUpdate(config: Map[String, String])(implicit val executionContext: ExecutionContext, backend: SttpBackend[Identity, Nothing, NothingT]) {
 
   def send[D, V](keycloakUtils: KeycloakUtils, client: GraphQLClient[D, V], document: Document, variables: V): Future[Either[String, D]] = {
-    val configFactory = ConfigFactory.load
     val queryResult: Future[Either[String, GraphQlResponse[D]]] = (for {
-      token <- keycloakUtils.serviceAccountToken(configFactory.getString("client.id"), configFactory.getString("client.secret"))
+      token <- keycloakUtils.serviceAccountToken(config("client.id"), config("client.secret"))
       result <- client.getResult(token, document, Option(variables))
     } yield Right(result)) recover(e => {
       Left(e.getMessage)
@@ -34,5 +31,5 @@ class ApiUpdate()(implicit val executionContext: ExecutionContext, backend: Sttp
 }
 
 object ApiUpdate {
-  def apply()(implicit executionContext: ExecutionContext, backend: SttpBackend[Identity, Nothing, NothingT]): ApiUpdate = new ApiUpdate()(executionContext, backend)
+  def apply(config: Map[String, String])(implicit executionContext: ExecutionContext, backend: SttpBackend[Identity, Nothing, NothingT]): ApiUpdate = new ApiUpdate(config)(executionContext, backend)
 }
