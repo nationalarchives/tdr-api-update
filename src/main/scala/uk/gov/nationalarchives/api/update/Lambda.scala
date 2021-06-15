@@ -36,7 +36,6 @@ class Lambda {
             val processor = new Processor[AddAntivirusMetadataInput, avm.Data, avm.Variables](avm.document, i => avm.Variables(i), config)
             processor.process(avInput, bodyWithReceiptHandle.recieptHandle)
           case fileMetadataInput: AddFileMetadataInput =>
-            println(s"file property name ${fileMetadataInput.filePropertyName}")
             val processor = new Processor[AddFileMetadataInput, afm.Data, afm.Variables](afm.document, i => afm.Variables(i), config)
             processor.process(fileMetadataInput, bodyWithReceiptHandle.recieptHandle)
           case ffidMetadataInput: FFIDMetadataInput =>
