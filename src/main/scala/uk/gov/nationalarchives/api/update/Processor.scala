@@ -12,7 +12,7 @@ import sttp.client.{HttpURLConnectionBackend, Identity, NothingT, SttpBackend}
 import uk.gov.nationalarchives.tdr.GraphQLClient
 import uk.gov.nationalarchives.tdr.keycloak.KeycloakUtils
 
-import scala.concurrent.{Await, ExecutionContext, Future}
+import scala.concurrent.{ExecutionContext, Future}
 import scala.language.postfixOps
 
 class Processor[Input, Data, Variables](document: Document, variablesFn: Input => Variables, config: Map[String, String])(implicit val excecutionContext: ExecutionContext, val decoder: Decoder[Input], val dataDecoder: Decoder[Data], val variablesEncoder: Encoder[Variables]) {
@@ -27,12 +27,12 @@ class Processor[Input, Data, Variables](document: Document, variablesFn: Input =
     .httpClient(ApacheHttpClient.builder.build)
     .build()
 
-  def process(input: Input, receiptHandle: String): Future[Either[String, String]] = {
-    val response: Future[Either[String, Data]] =
+  def process(input: Input, receiptHandle: String): Future[String] = {
+    val response: Future[Data] =
       apiUpdate.send[Data, Variables](keycloakUtils, client, document, variablesFn(input))
-    response.map(_.map(_ => {
+    response.map(_ => {
       SQSUpdate(sqsClient).deleteSqsMessage(config("sqs.url"), receiptHandle)
       s"$input was successful"
-    }))
+    })
   }
 }

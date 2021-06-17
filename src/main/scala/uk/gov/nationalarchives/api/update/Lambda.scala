@@ -37,7 +37,7 @@ class Lambda {
 
     logger.info("Running API update with {} messages", value("messageCount", event.getRecords.size()))
 
-    val results: List[Either[circe.Error, Future[Either[String, String]]]] = event.getRecords.asScala
+    val results: List[Either[circe.Error, Future[String]]] = event.getRecords.asScala
       .map(r => BodyWithReceiptHandle(r.getBody, r.getReceiptHandle))
       .map(bodyWithReceiptHandle => {
         decode[Serializable](bodyWithReceiptHandle.body).map {
