@@ -6,9 +6,6 @@ import com.amazonaws.services.lambda.runtime.Context
 import com.amazonaws.services.lambda.runtime.events.SQSEvent
 import com.typesafe.config.{Config, ConfigFactory}
 import com.typesafe.scalalogging.Logger
-import graphql.codegen.AddAntivirusMetadata.{AddAntivirusMetadata => avm}
-import graphql.codegen.AddFFIDMetadata.{addFFIDMetadata => afim}
-import graphql.codegen.AddFileMetadata.{addFileMetadata => afm}
 import graphql.codegen.types.{AddAntivirusMetadataInput, AddFileMetadataInput, FFIDMetadataInput}
 import io.circe
 import io.circe.parser.decode
@@ -43,15 +40,15 @@ class Lambda {
         decode[Serializable](bodyWithReceiptHandle.body).map {
           case avInput: AddAntivirusMetadataInput =>
             logUpdateStart(avInput.fileId, "antivirus")
-            val processor = new Processor[AddAntivirusMetadataInput, avm.Data, avm.Variables](avm.document, i => avm.Variables(i), config)
+            val processor = new AntivirusProcessor(config)
             processor.process(avInput, bodyWithReceiptHandle.recieptHandle)
           case fileMetadataInput: AddFileMetadataInput =>
             logUpdateStart(fileMetadataInput.fileId, fileMetadataInput.filePropertyName)
-            val processor = new Processor[AddFileMetadataInput, afm.Data, afm.Variables](afm.document, i => afm.Variables(i), config)
+            val processor = new FileMetadataProcessor(config)
             processor.process(fileMetadataInput, bodyWithReceiptHandle.recieptHandle)
           case ffidMetadataInput: FFIDMetadataInput =>
             logUpdateStart(ffidMetadataInput.fileId, "FFID")
-            val processor = new Processor[FFIDMetadataInput, afim.Data, afim.Variables](afim.document, i => afim.Variables(i), config)
+            val processor = new FileFormatProcessor(config)
             processor.process(ffidMetadataInput, bodyWithReceiptHandle.recieptHandle)
         }
       }).toList
