@@ -32,7 +32,7 @@ class Lambda {
   val logger: Logger = Logger[Lambda]
   val statusLogs = new StatusLogs(logger)
 
-  def update(event: SQSEvent, context: Context): Seq[String] = {
+  def update(event: SQSEvent, context: Context): Unit = {
     case class BodyWithReceiptHandle(body: String, recieptHandle: String)
 
     logger.info("Running API update with {} messages", value("messageCount", event.getRecords.size()))

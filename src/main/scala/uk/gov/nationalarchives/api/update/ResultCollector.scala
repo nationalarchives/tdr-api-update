@@ -10,8 +10,7 @@ class ResultCollector()(implicit val executionContext: ExecutionContext) {
 
   val logger: Logger = Logger[ResultCollector]
 
-  // TODO: Return unit
-  def collect(results: List[Either[circe.Error, Future[String]]]): Future[Seq[String]] = {
+  def collect(results: List[Either[circe.Error, Future[String]]]): Future[Unit] = {
     val (decodingFailures: Seq[circe.Error], apiResult: Seq[Future[String]]) = results.partitionMap(identity)
 
     // Map all failed futures to a Try so that we can collect all the failures

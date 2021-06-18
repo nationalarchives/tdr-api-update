@@ -59,6 +59,6 @@ class ResultCollectorTest extends ExternalServicesTest with MockitoSugar with Ei
     val responseProcessor = ResultCollector()
     val id = "successful-id"
     val processed = responseProcessor.collect(List(Right(Future.successful(id))))
-    processed.futureValue.head should equal(id)
+    processed.futureValue should equal (())
   }
 }
