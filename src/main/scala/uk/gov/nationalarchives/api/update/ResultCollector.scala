@@ -2,6 +2,7 @@ package uk.gov.nationalarchives.api.update
 
 import com.typesafe.scalalogging.Logger
 import io.circe
+import net.logstash.logback.argument.StructuredArguments.value
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
@@ -24,9 +25,18 @@ class ResultCollector()(implicit val executionContext: ExecutionContext) {
       val allFailures = apiFailures ++ decodingFailures
 
       if (allFailures.nonEmpty) {
+        logger.error(
+          "There were {} failures out of {} messages",
+          value("messageCount", allFailures.size),
+          value("messageCount", results.size)
+        )
         throw new RuntimeException(s"${allFailures.length} messages out of ${results.length} failed: " +
           allFailures.map(_.getMessage).mkString(", "))
       } else {
+        logger.info(
+          "Successfully processed {} messages",
+          value("messageCount", results.size)
+        )
         successes
       }
     })

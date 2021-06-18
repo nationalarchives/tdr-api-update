@@ -1,7 +1,5 @@
 package uk.gov.nationalarchives.api.update
 
-import java.util.UUID
-
 import com.amazonaws.services.lambda.runtime.Context
 import com.amazonaws.services.lambda.runtime.events.SQSEvent
 import com.typesafe.config.{Config, ConfigFactory}
@@ -27,7 +25,6 @@ class Lambda {
     List("url.api", "url.auth", "sqs.url", "client.id", "client.secret")
   )
   val logger: Logger = Logger[Lambda]
-  val statusLogs = new StatusLogs(logger)
 
   def update(event: SQSEvent, context: Context): Unit = {
     case class BodyWithReceiptHandle(body: String, recieptHandle: String)
@@ -39,24 +36,17 @@ class Lambda {
       .map(bodyWithReceiptHandle => {
         decode[Serializable](bodyWithReceiptHandle.body).map {
           case avInput: AddAntivirusMetadataInput =>
-            logUpdateStart(avInput.fileId, "antivirus")
             val processor = new AntivirusProcessor(config)
             processor.process(avInput, bodyWithReceiptHandle.recieptHandle)
           case fileMetadataInput: AddFileMetadataInput =>
-            logUpdateStart(fileMetadataInput.fileId, fileMetadataInput.filePropertyName)
             val processor = new FileMetadataProcessor(config)
             processor.process(fileMetadataInput, bodyWithReceiptHandle.recieptHandle)
           case ffidMetadataInput: FFIDMetadataInput =>
-            logUpdateStart(ffidMetadataInput.fileId, "FFID")
             val processor = new FileFormatProcessor(config)
             processor.process(ffidMetadataInput, bodyWithReceiptHandle.recieptHandle)
         }
       }).toList
 
     Await.result(ResultCollector().collect(results), 10 seconds)
-  }
-
-  def logUpdateStart(fileId: UUID, fileCheckType: String): Unit = {
-    statusLogs.log(fileId, fileCheckType, "started")
   }
 }
