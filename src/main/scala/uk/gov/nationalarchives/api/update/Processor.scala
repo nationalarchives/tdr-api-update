@@ -1,9 +1,17 @@
 package uk.gov.nationalarchives.api.update
 
 import java.net.URI
+import java.util.UUID
 
 import com.typesafe.config.{Config, ConfigFactory}
+import com.typesafe.scalalogging.Logger
+import graphql.codegen.AddAntivirusMetadata.{AddAntivirusMetadata => avm}
+import graphql.codegen.AddFFIDMetadata.{addFFIDMetadata => afim}
+import graphql.codegen.AddFileMetadata.{addFileMetadata => afm}
+import graphql.codegen.types.{AddAntivirusMetadataInput, AddFileMetadataInput, FFIDMetadataInput}
+import io.circe.generic.semiauto.deriveDecoder
 import io.circe.{Decoder, Encoder}
+import net.logstash.logback.argument.StructuredArguments.value
 import sangria.ast.Document
 import software.amazon.awssdk.http.apache.ApacheHttpClient
 import software.amazon.awssdk.regions.Region
@@ -12,10 +20,12 @@ import sttp.client.{HttpURLConnectionBackend, Identity, NothingT, SttpBackend}
 import uk.gov.nationalarchives.tdr.GraphQLClient
 import uk.gov.nationalarchives.tdr.keycloak.KeycloakUtils
 
-import scala.concurrent.{Await, ExecutionContext, Future}
+import scala.concurrent.{ExecutionContext, Future}
 import scala.language.postfixOps
 
-class Processor[Input, Data, Variables](document: Document, variablesFn: Input => Variables, config: Map[String, String])(implicit val excecutionContext: ExecutionContext, val decoder: Decoder[Input], val dataDecoder: Decoder[Data], val variablesEncoder: Encoder[Variables]) {
+trait Processor[Input, Data, Variables] {
+  val logger: Logger = Logger[Processor[Input, Data, Variables]]
+
   implicit val backend: SttpBackend[Identity, Nothing, NothingT] = HttpURLConnectionBackend()
   val configFactory: Config = ConfigFactory.load
   val client = new GraphQLClient[Data, Variables](config("url.api"))
@@ -27,12 +37,90 @@ class Processor[Input, Data, Variables](document: Document, variablesFn: Input =
     .httpClient(ApacheHttpClient.builder.build)
     .build()
 
-  def process(input: Input, receiptHandle: String): Future[Either[String, String]] = {
-    val response: Future[Either[String, Data]] =
-      apiUpdate.send[Data, Variables](keycloakUtils, client, document, variablesFn(input))
-    response.map(_.map(_ => {
-      SQSUpdate(sqsClient).deleteSqsMessage(config("sqs.url"), receiptHandle)
-      s"$input was successful"
-    }))
+  def graphQlQuery: Document
+  def config: Map[String, String]
+  def variables(input: Input): Variables
+  def fileCheckName(input: Input): String
+  def fileId(input: Input): UUID
+
+  implicit def executionContext: ExecutionContext
+  implicit def dataDecoder: Decoder[Data]
+  implicit def variablesEncoder: Encoder[Variables]
+
+  def process(input: Input, receiptHandle: String): Future[String] = {
+    logStart(input)
+
+    apiUpdate.send[Data, Variables](keycloakUtils, client, graphQlQuery, variables(input))
+      .map(_ => {
+        logSuccess(input)
+        SQSUpdate(sqsClient).deleteSqsMessage(config("sqs.url"), receiptHandle)
+        s"$input was successful"
+      })
+      .recover(e => {
+        logError(input, e)
+        throw e
+      })
   }
+
+  private def logStart(input: Input): Unit = {
+    logger.info(
+      "Saving {} metadata for file ID '{}'. Status: {}",
+      value("metadataType", fileCheckName(input)),
+      value("fileId", fileId(input)),
+      value("apiUpdateStatus", "started")
+    )
+  }
+
+  private def logSuccess(input: Input): Unit = {
+    logger.info(
+      "Successfully saved {} metadata for file ID '{}'. Status: {}",
+      value("metadataType", fileCheckName(input)),
+      value("fileId", fileId(input)),
+      value("apiUpdateStatus", "success")
+    )
+  }
+
+  private def logError(input: Input, e: Throwable): Unit = {
+    // ScalaLogging does not have a method for logging structured data and a full error in the same message, so log them separately
+    logger.error(
+      "Error saving {} metadata for file ID '{}'. Status: {}",
+      value("metadataType", fileCheckName(input)),
+      value("fileId", fileId(input)),
+      value("apiUpdateStatus", "error")
+    )
+    logger.error(s"Error saving ${fileCheckName(input)} metadata for file ID '${fileId(input)}'", e)
+  }
+}
+
+class AntivirusProcessor(val config: Map[String, String])(implicit val executionContext: ExecutionContext)
+  extends Processor[AddAntivirusMetadataInput, avm.Data, avm.Variables] {
+  override val graphQlQuery: Document = avm.document
+  override def variables(input: AddAntivirusMetadataInput): avm.Variables = avm.Variables(input)
+  override def dataDecoder: Decoder[avm.Data] = deriveDecoder[avm.Data]
+  override def variablesEncoder: Encoder[avm.Variables] = avm.Variables.jsonEncoder
+
+  override def fileCheckName(input: AddAntivirusMetadataInput): String = "antivirus"
+  override def fileId(input: AddAntivirusMetadataInput): UUID = input.fileId
+}
+
+class FileMetadataProcessor(val config: Map[String, String])(implicit val executionContext: ExecutionContext)
+  extends Processor[AddFileMetadataInput, afm.Data, afm.Variables] {
+  override val graphQlQuery: Document = afm.document
+  override def variables(input: AddFileMetadataInput): afm.Variables = afm.Variables(input)
+  override def dataDecoder: Decoder[afm.Data] = deriveDecoder[afm.Data]
+  override def variablesEncoder: Encoder[afm.Variables] = afm.Variables.jsonEncoder
+
+  override def fileCheckName(input: AddFileMetadataInput): String = input.filePropertyName
+  override def fileId(input: AddFileMetadataInput): UUID = input.fileId
+}
+
+class FileFormatProcessor(val config: Map[String, String])(implicit val executionContext: ExecutionContext)
+  extends Processor[FFIDMetadataInput, afim.Data, afim.Variables] {
+  override val graphQlQuery: Document = afim.document
+  override def variables(input: FFIDMetadataInput): afim.Variables = afim.Variables(input)
+  override def dataDecoder: Decoder[afim.Data] = deriveDecoder[afim.Data]
+  override def variablesEncoder: Encoder[afim.Variables] = afim.Variables.jsonEncoder
+
+  override def fileCheckName(input: FFIDMetadataInput): String = "FFID"
+  override def fileId(input: FFIDMetadataInput): UUID = input.fileId
 }

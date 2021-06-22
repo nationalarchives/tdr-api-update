@@ -91,8 +91,8 @@ class ApiUpdateTest extends ExternalServicesTest with MockitoSugar with EitherVa
       .thenReturn(Future.successful(new BearerAccessToken("token")))
     when(client.getResult[Identity](any[BearerAccessToken], any[Document], any[Option[Variables]])(any[SttpBackend[Identity, Nothing, NothingT]], any[ClassTag[Identity[_]]])).thenThrow(new HttpException(response))
 
-    val res: Either[String, Data] = ApiUpdate(config).send(keycloakUtils, client, document, variables).futureValue
-    res.left.value shouldEqual "Unexpected response from GraphQL API: Response(Left(Graphql error),503,,List(),List())"
+    val res = ApiUpdate(config).send(keycloakUtils, client, document, variables).failed.futureValue
+    res.getMessage shouldEqual "Unexpected response from GraphQL API: Response(Left(Graphql error),503,,List(),List())"
   }
 
   "The send method" should "error if the graphql query returns not authorised errors" in {
@@ -110,9 +110,9 @@ class ApiUpdateTest extends ExternalServicesTest with MockitoSugar with EitherVa
     when(client.getResult[Identity](any[BearerAccessToken], any[Document], any[Option[Variables]])(any[SttpBackend[Identity, Nothing, NothingT]], any[ClassTag[Identity[_]]]))
       .thenReturn(Future.successful(graphqlResponse))
 
-    val res = ApiUpdate(config).send(keycloakUtils, client, document, variables).futureValue
+    val res = ApiUpdate(config).send(keycloakUtils, client, document, variables).failed.futureValue
 
-    res.left.value shouldEqual "Not authorised message"
+    res.getMessage should include("Not authorised message")
   }
 
   "The send method" should "error if the graphql query returns a general error" in {
@@ -130,7 +130,7 @@ class ApiUpdateTest extends ExternalServicesTest with MockitoSugar with EitherVa
     when(client.getResult[Identity](any[BearerAccessToken], any[Document], any[Option[Variables]])(any[SttpBackend[Identity, Nothing, NothingT]], any[ClassTag[Identity[_]]]))
       .thenReturn(Future.successful(graphqlResponse))
 
-    val res = ApiUpdate(config).send(keycloakUtils, client, document, variables).futureValue
-    res.left.value shouldEqual "GraphQL response contained errors: General error"
+    val res = ApiUpdate(config).send(keycloakUtils, client, document, variables).failed.futureValue
+    res.getMessage shouldEqual "GraphQL response contained errors: General error"
   }
 }
