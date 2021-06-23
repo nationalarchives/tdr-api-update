@@ -54,6 +54,7 @@ trait Processor[Input, Data, Variables] {
       .map(_ => {
         logSuccess(input)
         SQSUpdate(sqsClient).deleteSqsMessage(config("sqs.url"), receiptHandle)
+        logSqsUpdate(input)
         s"$input was successful"
       })
       .recover(e => {
@@ -62,21 +63,18 @@ trait Processor[Input, Data, Variables] {
       })
   }
 
-  private def logStart(input: Input): Unit = {
+  private def logStart(input: Input): Unit =
+    logStatus("Started saving metadata", fileCheckName(input), fileId(input), "started")
+  private def logSuccess(input: Input): Unit =
+    logStatus("Successfully saved metadata", fileCheckName(input), fileId(input), "success")
+  private def logSqsUpdate(input: Input): Unit =
+    logStatus("Successfully removed message", fileCheckName(input), fileId(input), "messageDeleted")
+  private def logStatus(baseMessage: String, metadataType: String, fileId: UUID, status: String): Unit = {
     logger.info(
-      "Saving {} metadata for file ID '{}'. Status: {}",
-      value("metadataType", fileCheckName(input)),
-      value("fileId", fileId(input)),
-      value("apiUpdateStatus", "started")
-    )
-  }
-
-  private def logSuccess(input: Input): Unit = {
-    logger.info(
-      "Successfully saved {} metadata for file ID '{}'. Status: {}",
-      value("metadataType", fileCheckName(input)),
-      value("fileId", fileId(input)),
-      value("apiUpdateStatus", "success")
+      s"$baseMessage. Metadata type: '{}', file ID: '{}', status: '{}'",
+      value("metadataType", metadataType),
+      value("fileId", fileId),
+      value("apiUpdateStatus", status)
     )
   }
 
