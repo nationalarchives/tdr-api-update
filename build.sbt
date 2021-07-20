@@ -25,7 +25,8 @@ libraryDependencies ++= Seq(
   wiremock % Test,
   scalaTest % Test,
   keycloakMock % Test,
-  sqsMock % Test
+  elasticMq % Test,
+  elasticMqSqs % Test
 )
 
 fork in Test := true
