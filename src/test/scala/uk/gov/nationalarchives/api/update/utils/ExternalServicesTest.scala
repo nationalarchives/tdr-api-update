@@ -1,7 +1,8 @@
 package uk.gov.nationalarchives.api.update.utils
 
 import java.net.URI
-import java.util
+import java.nio.ByteBuffer
+import java.nio.charset.Charset
 
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.ResponseDefinitionBuilder
@@ -11,26 +12,19 @@ import com.github.tomakehurst.wiremock.core.WireMockConfiguration
 import com.github.tomakehurst.wiremock.extension.{Parameters, ResponseDefinitionTransformer}
 import com.github.tomakehurst.wiremock.http.{Request, ResponseDefinition}
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
-import org.elasticmq.rest.sqs.TheSQSRestServerBuilder
-import software.amazon.awssdk.services.sqs.model.QueueAttributeName
-
-import java.nio.ByteBuffer
-import java.nio.charset.Charset
-
 import io.circe.generic.auto._
 import io.circe.parser.decode
-import org.elasticmq.rest.sqs.SQSRestServerBuilder
+import org.elasticmq.rest.sqs.{SQSRestServerBuilder, TheSQSRestServerBuilder}
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.time.{Millis, Seconds, Span}
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach}
 import software.amazon.awssdk.regions.Region
 import software.amazon.awssdk.services.sqs.SqsClient
-import software.amazon.awssdk.services.sqs.model.{CreateQueueRequest, DeleteMessageRequest, ReceiveMessageRequest}
+import software.amazon.awssdk.services.sqs.model.CreateQueueRequest
 
 import scala.concurrent.ExecutionContext
 import scala.io.Source.fromResource
-import scala.jdk.CollectionConverters._
 
 class ExternalServicesTest extends AnyFlatSpec with BeforeAndAfterEach with BeforeAndAfterAll with ScalaFutures {
 
@@ -96,10 +90,7 @@ class ExternalServicesTest extends AnyFlatSpec with BeforeAndAfterEach with Befo
     wiremockKmsEndpoint.start()
     api.start()
 
-    val visibilityTimeoutAttributes = new util.HashMap[QueueAttributeName, String]()
-    visibilityTimeoutAttributes.put(QueueAttributeName.VISIBILITY_TIMEOUT, (12 * 60 * 60).toString)
-
-    val request = CreateQueueRequest.builder.queueName(queueUrl.split("/")(4)).attributes(visibilityTimeoutAttributes).build()
+    val request = CreateQueueRequest.builder().queueName(queueName).build()
     client.createQueue(request)
   }
 
@@ -113,16 +104,5 @@ class ExternalServicesTest extends AnyFlatSpec with BeforeAndAfterEach with Befo
     wiremockAuthServer.resetAll()
     wiremockGraphqlServer.resetAll()
     wiremockKmsEndpoint.resetAll()
-    client.receiveMessage(
-      ReceiveMessageRequest
-        .builder
-        .queueUrl(queueUrl)
-        .visibilityTimeout(0) //Remove this once the change visibility code is added to the lambda.
-        .maxNumberOfMessages(10)
-        .build
-    ).messages.asScala
-      .foreach(msg => {
-      client.deleteMessage(DeleteMessageRequest.builder.queueUrl(queueUrl).receiptHandle(msg.receiptHandle).build())
-    })
   }
 }
