@@ -21,7 +21,7 @@ import org.scalatest.time.{Millis, Seconds, Span}
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach}
 import software.amazon.awssdk.regions.Region
 import software.amazon.awssdk.services.sqs.SqsClient
-import software.amazon.awssdk.services.sqs.model.CreateQueueRequest
+import software.amazon.awssdk.services.sqs.model.{CreateQueueRequest, CreateQueueResponse, DeleteQueueRequest, DeleteQueueResponse}
 
 import scala.concurrent.ExecutionContext
 import scala.io.Source.fromResource
@@ -62,6 +62,7 @@ class ExternalServicesTest extends AnyFlatSpec with BeforeAndAfterEach with Befo
 
   val graphQlPath = "/graphql"
   val authPath = "/auth/realms/tdr/protocol/openid-connect/token"
+  val request = CreateQueueRequest.builder().queueName(queueName).build()
 
   def graphQlUrl: String = wiremockGraphqlServer.url(graphQlPath)
 
@@ -80,7 +81,12 @@ class ExternalServicesTest extends AnyFlatSpec with BeforeAndAfterEach with Befo
     .endpointOverride(new URI(s"http://localhost:$port"))
     .build()
 
+  def createQueue: CreateQueueResponse = client.createQueue(request)
+
+  def deleteQueue: DeleteQueueResponse = client.deleteQueue(DeleteQueueRequest.builder.queueUrl(queueUrl).build())
+
   override def beforeEach(): Unit = {
+    createQueue
     stubKmsResponse
   }
 
@@ -89,9 +95,6 @@ class ExternalServicesTest extends AnyFlatSpec with BeforeAndAfterEach with Befo
     wiremockAuthServer.start()
     wiremockKmsEndpoint.start()
     api.start()
-
-    val request = CreateQueueRequest.builder().queueName(queueName).build()
-    client.createQueue(request)
   }
 
   override def afterAll(): Unit = {
@@ -104,5 +107,6 @@ class ExternalServicesTest extends AnyFlatSpec with BeforeAndAfterEach with Befo
     wiremockAuthServer.resetAll()
     wiremockGraphqlServer.resetAll()
     wiremockKmsEndpoint.resetAll()
+    deleteQueue
   }
 }
