@@ -30,7 +30,6 @@ object AWSInputs extends MockitoSugar {
       .builder
       .maxNumberOfMessages(10)
       .queueUrl(queueUrl)
-      .visibilityTimeout(0) //Remove this once the change visibility code is added to the lambda.
       .build).messages.asScala.toList
 
     records.foreach(record => {

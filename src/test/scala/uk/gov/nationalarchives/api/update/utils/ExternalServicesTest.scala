@@ -21,7 +21,7 @@ import org.scalatest.time.{Millis, Seconds, Span}
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach}
 import software.amazon.awssdk.regions.Region
 import software.amazon.awssdk.services.sqs.SqsClient
-import software.amazon.awssdk.services.sqs.model.{CreateQueueRequest, CreateQueueResponse, DeleteQueueRequest, DeleteQueueResponse}
+import software.amazon.awssdk.services.sqs.model.{CreateQueueRequest, CreateQueueResponse, DeleteQueueRequest, DeleteQueueResponse, GetQueueAttributesRequest, QueueAttributeName}
 
 import scala.concurrent.ExecutionContext
 import scala.io.Source.fromResource
@@ -84,6 +84,14 @@ class ExternalServicesTest extends AnyFlatSpec with BeforeAndAfterEach with Befo
   def createQueue: CreateQueueResponse = client.createQueue(request)
 
   def deleteQueue: DeleteQueueResponse = client.deleteQueue(DeleteQueueRequest.builder.queueUrl(queueUrl).build())
+
+  def queueAttribute(attributeName: QueueAttributeName): String = client.getQueueAttributes(
+    GetQueueAttributesRequest.builder().queueUrl(queueUrl).attributeNames(attributeName).build()
+  ).attributes().get(attributeName)
+
+  def nonVisibleMessageCount: Int = queueAttribute(QueueAttributeName.APPROXIMATE_NUMBER_OF_MESSAGES_NOT_VISIBLE).toInt
+
+  def availableMessageCount: Int = queueAttribute(QueueAttributeName.APPROXIMATE_NUMBER_OF_MESSAGES).toInt
 
   override def beforeEach(): Unit = {
     createQueue
