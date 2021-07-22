@@ -78,6 +78,18 @@ class ResultCollectorTest extends ExternalServicesTest with MockitoSugar with Ei
     caught.getMessage should include("second API error")
   }
 
+  "The collect method" should "not reset message visibility for non failed api update exception" in {
+    val sqsUtilsMock = mock[SQSUtils]
+    val someException = new RuntimeException("some error")
+
+    val responseProcessor = ResultCollector(config, sqsUtilsMock)
+    val caught = responseProcessor.collect(List(Right(Future.failed(someException))))
+      .failed.futureValue
+
+    verify(sqsUtilsMock, never).makeMessageVisible(any[String], any[String])
+    caught.getMessage should include("some error")
+  }
+
   "The collect method" should "return successfully if all responses have succeeded" in {
     val sqsUtilsMock = mock[SQSUtils]
     val responseProcessor = ResultCollector(config, sqsUtilsMock)

@@ -22,7 +22,7 @@ class ResultCollector(val config: Map[String, String], sqsUtils: SQSUtils)
     })
 
     Future.sequence(handledFutures).map(results => {
-      val (apiFailures: Seq[FailedApiUpdateException], successes: Seq[String]) = results.partitionMap(_.toEither)
+      val (apiFailures: Seq[Throwable], successes: Seq[String]) = results.partitionMap(_.toEither)
       val allFailures = apiFailures ++ decodingFailures
 
       if (allFailures.nonEmpty) {
@@ -32,7 +32,10 @@ class ResultCollector(val config: Map[String, String], sqsUtils: SQSUtils)
           value("messageCount", results.size)
         )
 
-        allFailures.map(e => sqsUtils.makeMessageVisible(config("sqs.url"), e.receiptHandle))
+        allFailures.foreach {
+          case FailedApiUpdateException(receiptHandle, _) => sqsUtils.makeMessageVisible(config("sqs.url"), receiptHandle)
+          case _ => // Allow message to expire and be retried at its original expiry time
+        }
 
         throw new RuntimeException(s"${allFailures.length} messages out of ${results.length} failed: " +
           allFailures.map(_.getMessage).mkString(", "))
