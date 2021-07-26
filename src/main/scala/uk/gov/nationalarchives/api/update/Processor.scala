@@ -59,7 +59,7 @@ trait Processor[Input, Data, Variables] {
       })
       .recover(e => {
         logError(input, e)
-        throw e
+        throw FailedApiUpdateException(receiptHandle, e)
       })
   }
 

@@ -9,8 +9,8 @@ import io.circe
 import io.circe.parser.decode
 import net.logstash.logback.argument.StructuredArguments.value
 import uk.gov.nationalarchives.api.update.Decoders._
-import uk.gov.nationalarchives.aws.utils.Clients.kms
-import uk.gov.nationalarchives.aws.utils.KMSUtils
+import uk.gov.nationalarchives.aws.utils.Clients.{kms, sqs}
+import uk.gov.nationalarchives.aws.utils.{KMSUtils, SQSUtils}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
@@ -25,28 +25,31 @@ class Lambda {
     List("url.api", "url.auth", "sqs.url", "client.id", "client.secret")
   )
   val logger: Logger = Logger[Lambda]
+  val sqsUtils: SQSUtils = SQSUtils(sqs)
 
   def update(event: SQSEvent, context: Context): Unit = {
-    case class BodyWithReceiptHandle(body: String, recieptHandle: String)
+    case class BodyWithReceiptHandle(body: String, receiptHandle: String)
 
     logger.info("Running API update with {} messages", value("messageCount", event.getRecords.size()))
 
-    val results: List[Either[circe.Error, Future[String]]] = event.getRecords.asScala
+    val results: List[Either[FailedApiUpdateException, Future[String]]] = event.getRecords.asScala
       .map(r => BodyWithReceiptHandle(r.getBody, r.getReceiptHandle))
       .map(bodyWithReceiptHandle => {
         decode[Serializable](bodyWithReceiptHandle.body).map {
           case avInput: AddAntivirusMetadataInput =>
             val processor = new AntivirusProcessor(config)
-            processor.process(avInput, bodyWithReceiptHandle.recieptHandle)
+            processor.process(avInput, bodyWithReceiptHandle.receiptHandle)
           case fileMetadataInput: AddFileMetadataInput =>
             val processor = new FileMetadataProcessor(config)
-            processor.process(fileMetadataInput, bodyWithReceiptHandle.recieptHandle)
+            processor.process(fileMetadataInput, bodyWithReceiptHandle.receiptHandle)
           case ffidMetadataInput: FFIDMetadataInput =>
             val processor = new FileFormatProcessor(config)
-            processor.process(ffidMetadataInput, bodyWithReceiptHandle.recieptHandle)
-        }
+            processor.process(ffidMetadataInput, bodyWithReceiptHandle.receiptHandle)
+        }.left.map(circeError =>
+          FailedApiUpdateException(bodyWithReceiptHandle.receiptHandle, circeError)
+        )
       }).toList
 
-    Await.result(ResultCollector().collect(results), 10 seconds)
+    Await.result(ResultCollector(config, sqsUtils).collect(results), 10 seconds)
   }
 }
