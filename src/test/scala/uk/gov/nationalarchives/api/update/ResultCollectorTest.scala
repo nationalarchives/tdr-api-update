@@ -12,9 +12,11 @@ import uk.gov.nationalarchives.api.update.utils.ExternalServicesTest
 import uk.gov.nationalarchives.aws.utils.SQSUtils
 import uk.gov.nationalarchives.tdr.error.HttpException
 
+import java.time.Instant
 import scala.concurrent.Future
 
 class ResultCollectorTest extends ExternalServicesTest with MockitoSugar with EitherValues with ScalaFutures {
+  implicit val startTime: Instant = Instant.now
 
   val config: Map[String, String] = Map("sqs.url" -> queueUrl)
 

@@ -4,11 +4,13 @@ import com.typesafe.scalalogging.Logger
 import net.logstash.logback.argument.StructuredArguments.value
 import uk.gov.nationalarchives.aws.utils.SQSUtils
 
+import java.time.Instant
+import scala.concurrent.duration.Duration
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
 
 class ResultCollector(val config: Map[String, String], sqsUtils: SQSUtils)
-                     (implicit val executionContext: ExecutionContext) {
+                     (implicit val executionContext: ExecutionContext, startTime: Instant) {
 
   val logger: Logger = Logger[ResultCollector]
 
@@ -40,11 +42,16 @@ class ResultCollector(val config: Map[String, String], sqsUtils: SQSUtils)
         throw new RuntimeException(s"${allFailures.length} messages out of ${results.length} failed: " +
           allFailures.map(_.getMessage).mkString(", "))
       } else {
-        logger.info(
-          "Successfully processed {} messages",
-          value("messageCount", results.size)
-        )
-        successes
+        val timeTaken = java.time.Duration.between(startTime, Instant.now).toMillis.toDouble / 1000
+        successes.map(success => {
+          logger.info(
+            "Successfully processed {} messages in {} seconds for fileId {}",
+            value("messageCount", results.size),
+            value("timeTaken", timeTaken),
+            value("fileId", success),
+            value("consignmentId", success)
+          )
+        })
       }
     })
   }
@@ -52,5 +59,5 @@ class ResultCollector(val config: Map[String, String], sqsUtils: SQSUtils)
 
 object ResultCollector {
   def apply(config: Map[String, String], sqsUtils: SQSUtils)
-           (implicit executionContext: ExecutionContext): ResultCollector = new ResultCollector(config, sqsUtils)
+           (implicit executionContext: ExecutionContext, startTime: Instant): ResultCollector = new ResultCollector(config, sqsUtils)
 }

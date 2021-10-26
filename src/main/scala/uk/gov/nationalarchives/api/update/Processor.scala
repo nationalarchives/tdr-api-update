@@ -55,7 +55,7 @@ trait Processor[Input, Data, Variables] {
         logSuccess(input)
         SQSUpdate(sqsClient).deleteSqsMessage(config("sqs.url"), receiptHandle)
         logSqsUpdate(input)
-        s"$input was successful"
+        fileId(input).toString
       })
       .recover(e => {
         logError(input, e)

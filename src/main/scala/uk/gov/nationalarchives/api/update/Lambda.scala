@@ -12,6 +12,7 @@ import uk.gov.nationalarchives.api.update.Decoders._
 import uk.gov.nationalarchives.aws.utils.Clients.{kms, sqs}
 import uk.gov.nationalarchives.aws.utils.{KMSUtils, SQSUtils}
 
+import java.time.Instant
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
@@ -28,6 +29,7 @@ class Lambda {
   val sqsUtils: SQSUtils = SQSUtils(sqs)
 
   def update(event: SQSEvent, context: Context): Unit = {
+    implicit val startTime: Instant = Instant.now
     case class BodyWithReceiptHandle(body: String, receiptHandle: String)
 
     logger.info("Running API update with {} messages", value("messageCount", event.getRecords.size()))
