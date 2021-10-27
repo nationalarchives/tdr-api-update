@@ -18,19 +18,21 @@ import software.amazon.awssdk.regions.Region
 import software.amazon.awssdk.services.sqs.SqsClient
 import sttp.client.{HttpURLConnectionBackend, Identity, NothingT, SttpBackend}
 import uk.gov.nationalarchives.tdr.GraphQLClient
-import uk.gov.nationalarchives.tdr.keycloak.KeycloakUtils
+import uk.gov.nationalarchives.tdr.keycloak.{KeycloakUtils, TdrKeycloakDeployment}
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.language.postfixOps
 
 trait Processor[Input, Data, Variables] {
   val logger: Logger = Logger[Processor[Input, Data, Variables]]
+  val configFactory: Config = ConfigFactory.load
 
   implicit val backend: SttpBackend[Identity, Nothing, NothingT] = HttpURLConnectionBackend()
-  val configFactory: Config = ConfigFactory.load
+  implicit val tdrKeycloakDeployment: TdrKeycloakDeployment = TdrKeycloakDeployment(config("url.auth"), "tdr", 3600)
+
   val client = new GraphQLClient[Data, Variables](config("url.api"))
   val apiUpdate: ApiUpdate = ApiUpdate(config)
-  val keycloakUtils: KeycloakUtils = KeycloakUtils(config("url.auth"))
+  val keycloakUtils: KeycloakUtils = KeycloakUtils()
   val sqsClient: SqsClient = SqsClient.builder()
     .region(Region.EU_WEST_2)
     .endpointOverride(new URI(configFactory.getString("sqs.endpoint")))
