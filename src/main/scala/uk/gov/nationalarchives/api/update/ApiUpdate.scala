@@ -2,13 +2,16 @@ package uk.gov.nationalarchives.api.update
 
 import sangria.ast.Document
 import sttp.client.{Identity, NothingT, SttpBackend}
-import uk.gov.nationalarchives.tdr.keycloak.KeycloakUtils
+import uk.gov.nationalarchives.tdr.keycloak.{KeycloakUtils, TdrKeycloakDeployment}
 import uk.gov.nationalarchives.tdr.{GraphQLClient, GraphQlResponse}
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.language.postfixOps
 
-class ApiUpdate(config: Map[String, String])(implicit val executionContext: ExecutionContext, backend: SttpBackend[Identity, Nothing, NothingT]) {
+class ApiUpdate(config: Map[String, String])(
+  implicit val executionContext: ExecutionContext,
+  backend: SttpBackend[Identity, Nothing, NothingT],
+  keycloakDeployment: TdrKeycloakDeployment) {
 
   def send[D, V](keycloakUtils: KeycloakUtils, client: GraphQLClient[D, V], document: Document, variables: V): Future[D] = {
     val queryResult: Future[GraphQlResponse[D]] = for {
@@ -27,5 +30,8 @@ class ApiUpdate(config: Map[String, String])(implicit val executionContext: Exec
 }
 
 object ApiUpdate {
-  def apply(config: Map[String, String])(implicit executionContext: ExecutionContext, backend: SttpBackend[Identity, Nothing, NothingT]): ApiUpdate = new ApiUpdate(config)(executionContext, backend)
+  def apply(config: Map[String, String])(
+    implicit executionContext: ExecutionContext,
+    backend: SttpBackend[Identity, Nothing, NothingT],
+    keycloakDeployment: TdrKeycloakDeployment): ApiUpdate = new ApiUpdate(config)(executionContext, backend, keycloakDeployment)
 }
