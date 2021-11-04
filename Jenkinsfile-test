@@ -1,85 +1,9 @@
 library("tdr-jenkinslib")
 
-def versionTag = "v${env.BUILD_NUMBER}"
-def repo = "tdr-api-update"
-
-pipeline {
-  agent {
-    label "built-in"
-  }
-  parameters {
-    choice(name: "STAGE", choices: ["intg", "staging", "prod"], description: "The stage you are building the api update lambda for")
-  }
-  stages {
-    stage("Run git secrets") {
-      steps {
-        script {
-          tdr.runGitSecrets(repo)
-        }
-      }
-    }
-    stage("Build") {
-      agent {
-        ecs {
-          inheritFrom "transfer-frontend"
-        }
-      }
-      steps {
-        script {
-          tdr.reportStartOfBuildToGitHub(repo, env.GIT_COMMIT)
-        }
-        sh "sbt -no-colors assembly"
-        stash includes: "target/scala-2.13/api-update.jar", name: "api-update-jar"
-      }
-    }
-    stage('Post-build') {
-      agent {
-        ecs {
-          inheritFrom "aws"
-          taskrole "arn:aws:iam::${env.MANAGEMENT_ACCOUNT}:role/TDRJenkinsNodeLambdaRole${params.STAGE.capitalize()}"
-        }
-      }
-
-      when {
-        expression { env.BRANCH_NAME == "master"}
-      }
-
-      stages {
-        stage('Deploy to integration') {
-          steps {
-            script {
-              unstash "api-update-jar"
-              sh "aws s3 cp target/scala-2.13/api-update.jar s3://tdr-backend-code-mgmt/${versionTag}/api-update.jar"
-              sh 'git config --global user.email tna-digital-archiving-jenkins@nationalarchives.gov.uk'
-              sh 'git config --global user.name tna-digital-archiving-jenkins'
-              sh "git tag ${versionTag}"
-              sshagent(['github-jenkins']) {
-                sh("git push origin ${versionTag}")
-              }
-              build(
-                  job: "TDR Api Update Deploy",
-                  parameters: [
-                      string(name: "STAGE", value: "intg"),
-                      string(name: "TO_DEPLOY", value: versionTag)
-                  ],
-                  wait: false)
-            }
-          }
-        }
-      }
-    }
-  }
-  post {
-    failure {
-      script {
-        tdr.reportFailedBuildToGitHub(repo, env.GIT_COMMIT)
-      }
-    }
-    success {
-      script {
-        tdr.reportSuccessfulBuildToGitHub(repo, env.GIT_COMMIT)
-      }
-    }
-  }
-}
-
+lambdaTests(
+        // Hard-code stage, since it is arbitrary in the lambdaTests
+        // function, which publishes the code to the management account
+        stage: "intg",
+        libraryName: "api-update",
+        deployJobName: "TDR Api Update Deploy"
+)
