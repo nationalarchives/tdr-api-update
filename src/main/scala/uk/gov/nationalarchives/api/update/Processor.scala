@@ -5,7 +5,7 @@ import java.util.UUID
 
 import com.typesafe.config.{Config, ConfigFactory}
 import com.typesafe.scalalogging.Logger
-import graphql.codegen.AddAntivirusMetadata.{AddAntivirusMetadata => avm}
+import graphql.codegen.AddAntivirusMetadata.{addAntivirusMetadata => avm}
 import graphql.codegen.AddFFIDMetadata.{addFFIDMetadata => afim}
 import graphql.codegen.AddFileMetadata.{addFileMetadata => afm}
 import graphql.codegen.types.{AddAntivirusMetadataInput, AddFileMetadataInput, FFIDMetadataInput}
