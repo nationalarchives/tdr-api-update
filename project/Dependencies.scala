@@ -21,7 +21,7 @@ object Dependencies {
   lazy val keycloakMock = "com.tngtech.keycloakmock" % "mock" % "0.11.0"
   lazy val mockito = "org.mockito" %% "mockito-scala" % "1.14.1"
   lazy val sqs = "software.amazon.awssdk" % "sqs" % "2.13.5"
-  lazy val typesafe = "com.typesafe" % "config" % "1.4.0"
+  lazy val typesafe = "com.typesafe" % "config" % "1.4.2"
   lazy val elasticMq = "org.elasticmq" %% "elasticmq-server" % elasticMqVersion
   lazy val elasticMqSqs = "org.elasticmq" %% "elasticmq-rest-sqs" % elasticMqVersion
 }
