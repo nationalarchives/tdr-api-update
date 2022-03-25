@@ -2,7 +2,7 @@ import sbt._
 
 object Dependencies {
   private val circeVersion = "0.13.0"
-  private val elasticMqVersion = "1.1.1"
+  private val elasticMqVersion = "1.3.6"
 
   lazy val scalaTest = "org.scalatest" %% "scalatest" % "3.1.1"
   lazy val circeCore = "io.circe" %% "circe-core" % circeVersion
