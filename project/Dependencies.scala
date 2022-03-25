@@ -4,7 +4,7 @@ object Dependencies {
   private val circeVersion = "0.13.0"
   private val elasticMqVersion = "1.3.6"
 
-  lazy val scalaTest = "org.scalatest" %% "scalatest" % "3.1.1"
+  lazy val scalaTest = "org.scalatest" %% "scalatest" % "3.1.4"
   lazy val circeCore = "io.circe" %% "circe-core" % circeVersion
   lazy val circeGeneric = "io.circe" %% "circe-generic" % circeVersion
   lazy val circeParser = "io.circe" %% "circe-parser" % circeVersion
