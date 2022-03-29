@@ -29,12 +29,12 @@ libraryDependencies ++= Seq(
   elasticMqSqs % Test
 )
 
-fork in Test := true
-javaOptions in Test += s"-Dconfig.file=${sourceDirectory.value}/test/resources/application.conf"
+(Test / fork) := true
+(Test / javaOptions) += s"-Dconfig.file=${sourceDirectory.value}/test/resources/application.conf"
 
-assemblyMergeStrategy in assembly := {
+(assembly / assemblyMergeStrategy) := {
   case PathList("META-INF", xs@_*) => MergeStrategy.discard
   case _ => MergeStrategy.first
 }
 resolvers += "TDR Releases" at "s3://tdr-releases-mgmt"
-assemblyJarName in assembly := "api-update.jar"
+(assembly / assemblyJarName) := "api-update.jar"
