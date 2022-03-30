@@ -6,7 +6,7 @@ import org.mockito.MockitoSugar
 import org.scalatest.EitherValues
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.matchers.should.Matchers._
-import sttp.client.Response
+import sttp.client3.Response
 import sttp.model.StatusCode
 import uk.gov.nationalarchives.api.update.utils.ExternalServicesTest
 import uk.gov.nationalarchives.aws.utils.SQSUtils
