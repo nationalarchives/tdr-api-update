@@ -36,5 +36,4 @@ libraryDependencies ++= Seq(
   case PathList("META-INF", xs@_*) => MergeStrategy.discard
   case _ => MergeStrategy.first
 }
-resolvers += "TDR Releases" at "s3://tdr-releases-mgmt"
 (assembly / assemblyJarName) := "api-update.jar"
