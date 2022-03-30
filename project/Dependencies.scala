@@ -11,7 +11,7 @@ object Dependencies {
   lazy val lambdaCore = "com.amazonaws" % "aws-lambda-java-core" % "1.2.1"
   lazy val lambdaEvents = "com.amazonaws" % "aws-lambda-java-events" % "3.11.0"
   lazy val graphqlClient = "uk.gov.nationalarchives" %% "tdr-graphql-client" % "0.0.19"
-  lazy val authUtils = "uk.gov.nationalarchives" %% "tdr-auth-utils" % "0.0.37"
+  lazy val authUtils = "uk.gov.nationalarchives" %% "tdr-auth-utils" % "0.0.38"
   lazy val awsUtils = "uk.gov.nationalarchives.aws.utils" %% "tdr-aws-utils" % "0.1.16"
   lazy val scalaLogging = "com.typesafe.scala-logging" %% "scala-logging" % "3.9.4"
   lazy val logback = "ch.qos.logback" % "logback-classic" % "1.2.11"
@@ -19,7 +19,7 @@ object Dependencies {
   lazy val wiremock = "com.github.tomakehurst" % "wiremock-jre8" % "2.32.0"
   lazy val keycloakMock = "com.tngtech.keycloakmock" % "mock" % "0.11.0"
   lazy val mockito = "org.mockito" %% "mockito-scala" % "1.17.5"
-  lazy val sqs = "software.amazon.awssdk" % "sqs" % "2.13.76"
+  lazy val sqs = "software.amazon.awssdk" % "sqs" % "2.17.159"
   lazy val typesafe = "com.typesafe" % "config" % "1.4.2"
   lazy val elasticMq = "org.elasticmq" %% "elasticmq-server" % elasticMqVersion
   lazy val elasticMqSqs = "org.elasticmq" %% "elasticmq-rest-sqs" % elasticMqVersion
