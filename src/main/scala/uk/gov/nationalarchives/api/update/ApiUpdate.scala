@@ -1,7 +1,7 @@
 package uk.gov.nationalarchives.api.update
 
 import sangria.ast.Document
-import sttp.client.{Identity, NothingT, SttpBackend}
+import sttp.client3.{Identity, SttpBackend}
 import uk.gov.nationalarchives.tdr.keycloak.{KeycloakUtils, TdrKeycloakDeployment}
 import uk.gov.nationalarchives.tdr.{GraphQLClient, GraphQlResponse}
 
@@ -10,7 +10,7 @@ import scala.language.postfixOps
 
 class ApiUpdate(config: Map[String, String])(
   implicit val executionContext: ExecutionContext,
-  backend: SttpBackend[Identity, Nothing, NothingT],
+  backend: SttpBackend[Identity, Any],
   keycloakDeployment: TdrKeycloakDeployment) {
 
   def send[D, V](keycloakUtils: KeycloakUtils, client: GraphQLClient[D, V], document: Document, variables: V): Future[D] = {
@@ -32,6 +32,6 @@ class ApiUpdate(config: Map[String, String])(
 object ApiUpdate {
   def apply(config: Map[String, String])(
     implicit executionContext: ExecutionContext,
-    backend: SttpBackend[Identity, Nothing, NothingT],
+    backend: SttpBackend[Identity, Any],
     keycloakDeployment: TdrKeycloakDeployment): ApiUpdate = new ApiUpdate(config)(executionContext, backend, keycloakDeployment)
 }
