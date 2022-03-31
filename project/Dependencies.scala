@@ -7,7 +7,7 @@ object Dependencies {
   lazy val circeCore = "io.circe" %% "circe-core" % circeVersion
   lazy val circeGeneric = "io.circe" %% "circe-generic" % circeVersion
   lazy val circeParser = "io.circe" %% "circe-parser" % circeVersion
-  lazy val generatedGraphql = "uk.gov.nationalarchives" %% "tdr-generated-graphql" % "0.0.225"
+  lazy val generatedGraphql = "uk.gov.nationalarchives" %% "tdr-generated-graphql" % "0.0.226"
   lazy val lambdaCore = "com.amazonaws" % "aws-lambda-java-core" % "1.2.1"
   lazy val lambdaEvents = "com.amazonaws" % "aws-lambda-java-events" % "3.11.0"
   lazy val graphqlClient = "uk.gov.nationalarchives" %% "tdr-graphql-client" % "0.0.21"
@@ -19,7 +19,7 @@ object Dependencies {
   lazy val wiremock = "com.github.tomakehurst" % "wiremock-jre8" % "2.32.0"
   lazy val keycloakMock = "com.tngtech.keycloakmock" % "mock" % "0.11.0"
   lazy val mockito = "org.mockito" %% "mockito-scala" % "1.17.5"
-  lazy val sqs = "software.amazon.awssdk" % "sqs" % "2.17.159"
+  lazy val sqs = "software.amazon.awssdk" % "sqs" % "2.17.160"
   lazy val typesafe = "com.typesafe" % "config" % "1.4.2"
   lazy val elasticMq = "org.elasticmq" %% "elasticmq-server" % elasticMqVersion
   lazy val elasticMqSqs = "org.elasticmq" %% "elasticmq-rest-sqs" % elasticMqVersion
