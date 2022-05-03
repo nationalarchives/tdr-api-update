@@ -7,11 +7,11 @@ object Dependencies {
   lazy val circeCore = "io.circe" %% "circe-core" % circeVersion
   lazy val circeGeneric = "io.circe" %% "circe-generic" % circeVersion
   lazy val circeParser = "io.circe" %% "circe-parser" % circeVersion
-  lazy val generatedGraphql = "uk.gov.nationalarchives" %% "tdr-generated-graphql" % "0.0.238"
+  lazy val generatedGraphql = "uk.gov.nationalarchives" %% "tdr-generated-graphql" % "0.0.239"
   lazy val lambdaCore = "com.amazonaws" % "aws-lambda-java-core" % "1.2.1"
   lazy val lambdaEvents = "com.amazonaws" % "aws-lambda-java-events" % "3.11.0"
   lazy val graphqlClient = "uk.gov.nationalarchives" %% "tdr-graphql-client" % "0.0.30"
-  lazy val authUtils = "uk.gov.nationalarchives" %% "tdr-auth-utils" % "0.0.48"
+  lazy val authUtils = "uk.gov.nationalarchives" %% "tdr-auth-utils" % "0.0.49"
   lazy val awsUtils = "uk.gov.nationalarchives" %% "tdr-aws-utils" % "0.1.29"
   lazy val scalaLogging = "com.typesafe.scala-logging" %% "scala-logging" % "3.9.4"
   lazy val logback = "ch.qos.logback" % "logback-classic" % "1.2.11"
