@@ -44,7 +44,6 @@ class Lambda {
     ssmClient.getParameter(getParameterRequest).parameter().value()
   }
 
-
   def update(event: SQSEvent, @unused context: Context): Unit = {
     implicit val startTime: Instant = Instant.now
     case class BodyWithReceiptHandle(body: String, receiptHandle: String)
