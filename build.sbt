@@ -7,6 +7,7 @@ ThisBuild / organization := "uk.gov.nationalarchives"
 ThisBuild / organizationName := "api-update"
 
 libraryDependencies ++= Seq(
+  awsSsm,
   circeCore,
   circeGeneric,
   circeParser,
