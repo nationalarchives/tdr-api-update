@@ -2,7 +2,7 @@ import sbt._
 
 object Dependencies {
   private val circeVersion = "0.14.2"
-  private val elasticMqVersion = "1.3.8"
+  private val elasticMqVersion = "1.3.9"
 
   lazy val awsUtils = "uk.gov.nationalarchives" %% "tdr-aws-utils" % "0.1.34"
   lazy val awsSsm = "software.amazon.awssdk" % "ssm" % "2.17.233"
