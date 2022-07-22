@@ -32,6 +32,7 @@ class ExternalServicesTest extends AnyFlatSpec with BeforeAndAfterEach with Befo
 
   val wiremockGraphqlServer = new WireMockServer(9001)
   val wiremockAuthServer = new WireMockServer(9002)
+  val wiremockSsmServer = new WireMockServer(9004)
   val wiremockKmsEndpoint = new WireMockServer(new WireMockConfiguration().port(9003).extensions(new ResponseDefinitionTransformer {
     override def transform(request: Request, responseDefinition: ResponseDefinition, files: FileSource, parameters: Parameters): ResponseDefinition = {
       case class KMSRequest(CiphertextBlob: String)
@@ -52,6 +53,13 @@ class ExternalServicesTest extends AnyFlatSpec with BeforeAndAfterEach with Befo
   def stubKmsResponse: StubMapping =
     wiremockKmsEndpoint.stubFor(post(urlEqualTo("/")))
 
+  def setupSsmServer(): Unit = {
+    wiremockSsmServer
+      .stubFor(post(urlEqualTo("/"))
+        .willReturn(okJson("{\"Parameter\":{\"Name\":\"string\",\"Value\":\"string\"}}"))
+      )
+  }
+
   val port = 8001
   val account = 1
   val queueName = "testqueue"
@@ -62,7 +70,7 @@ class ExternalServicesTest extends AnyFlatSpec with BeforeAndAfterEach with Befo
 
   val graphQlPath = "/graphql"
   val authPath = "/auth/realms/tdr/protocol/openid-connect/token"
-  val request = CreateQueueRequest.builder().queueName(queueName).build()
+  val request: CreateQueueRequest = CreateQueueRequest.builder().queueName(queueName).build()
 
   def graphQlUrl: String = wiremockGraphqlServer.url(graphQlPath)
 
@@ -83,7 +91,7 @@ class ExternalServicesTest extends AnyFlatSpec with BeforeAndAfterEach with Befo
 
   def createQueue: CreateQueueResponse = client.createQueue(request)
 
-  def deleteQueue: DeleteQueueResponse = client.deleteQueue(DeleteQueueRequest.builder.queueUrl(queueUrl).build())
+  def deleteQueue(): DeleteQueueResponse = client.deleteQueue(DeleteQueueRequest.builder.queueUrl(queueUrl).build())
 
   def queueAttribute(attributeName: QueueAttributeName): String = client.getQueueAttributes(
     GetQueueAttributesRequest.builder().queueUrl(queueUrl).attributeNames(attributeName).build()
@@ -96,12 +104,14 @@ class ExternalServicesTest extends AnyFlatSpec with BeforeAndAfterEach with Befo
   override def beforeEach(): Unit = {
     createQueue
     stubKmsResponse
+    setupSsmServer()
   }
 
   override def beforeAll(): Unit = {
     wiremockGraphqlServer.start()
     wiremockAuthServer.start()
     wiremockKmsEndpoint.start()
+    wiremockSsmServer.start()
     api.start()
   }
 
@@ -109,12 +119,14 @@ class ExternalServicesTest extends AnyFlatSpec with BeforeAndAfterEach with Befo
     wiremockGraphqlServer.stop()
     wiremockAuthServer.stop()
     wiremockKmsEndpoint.stop()
+    wiremockSsmServer.stop()
   }
 
   override def afterEach(): Unit = {
     wiremockAuthServer.resetAll()
     wiremockGraphqlServer.resetAll()
     wiremockKmsEndpoint.resetAll()
-    deleteQueue
+    wiremockSsmServer.resetAll()
+    deleteQueue()
   }
 }

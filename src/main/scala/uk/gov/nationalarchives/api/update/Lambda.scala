@@ -5,14 +5,19 @@ import com.amazonaws.services.lambda.runtime.events.SQSEvent
 import com.typesafe.config.{Config, ConfigFactory}
 import com.typesafe.scalalogging.Logger
 import graphql.codegen.types.{AddAntivirusMetadataInput, AddFileMetadataWithFileIdInput, FFIDMetadataInput}
-import io.circe
 import io.circe.parser.decode
 import net.logstash.logback.argument.StructuredArguments.value
+import software.amazon.awssdk.http.apache.ApacheHttpClient
+import software.amazon.awssdk.regions.Region
+import software.amazon.awssdk.services.ssm.SsmClient
+import software.amazon.awssdk.services.ssm.model.GetParameterRequest
 import uk.gov.nationalarchives.api.update.Decoders._
 import uk.gov.nationalarchives.aws.utils.Clients.{kms, sqs}
 import uk.gov.nationalarchives.aws.utils.{KMSUtils, SQSUtils}
 
+import java.net.URI
 import java.time.Instant
+import scala.annotation.unused
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
@@ -23,12 +28,23 @@ class Lambda {
   val configFactory: Config = ConfigFactory.load
   val kmsUtils: KMSUtils = KMSUtils(kms(configFactory.getString("kms.endpoint")), Map("LambdaFunctionName" -> configFactory.getString("function.name")))
   val config: Map[String, String] = kmsUtils.decryptValuesFromConfig(
-    List("url.api", "url.auth", "sqs.url", "client.id", "client.secret")
-  )
+    List("url.api", "url.auth", "sqs.url", "client.id")
+  ) + ("client.secret" -> getClientSecret(configFactory.getString("client.secret_path"), configFactory.getString("ssm.endpoint")))
   val logger: Logger = Logger[Lambda]
   val sqsUtils: SQSUtils = SQSUtils(sqs)
 
-  def update(event: SQSEvent, context: Context): Unit = {
+  def getClientSecret(secretPath: String, endpoint: String): String = {
+    val httpClient = ApacheHttpClient.builder.build
+    val ssmClient: SsmClient = SsmClient.builder()
+      .endpointOverride(URI.create(endpoint))
+      .httpClient(httpClient)
+      .region(Region.EU_WEST_2)
+      .build()
+    val getParameterRequest = GetParameterRequest.builder.name(secretPath).withDecryption(true).build
+    ssmClient.getParameter(getParameterRequest).parameter().value()
+  }
+
+  def update(event: SQSEvent, @unused context: Context): Unit = {
     implicit val startTime: Instant = Instant.now
     case class BodyWithReceiptHandle(body: String, receiptHandle: String)
 
