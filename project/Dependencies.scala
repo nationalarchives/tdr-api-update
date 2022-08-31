@@ -15,7 +15,7 @@ object Dependencies {
   lazy val lambdaEvents = "com.amazonaws" % "aws-lambda-java-events" % "3.11.0"
   lazy val graphqlClient = "uk.gov.nationalarchives" %% "tdr-graphql-client" % "0.0.49"
   lazy val scalaLogging = "com.typesafe.scala-logging" %% "scala-logging" % "3.9.5"
-  lazy val logback = "ch.qos.logback" % "logback-classic" % "1.2.11"
+  lazy val logback = "ch.qos.logback" % "logback-classic" % "1.4.0"
   lazy val logstashLogbackEncoder = "net.logstash.logback" % "logstash-logback-encoder" % "7.2"
   lazy val wiremock = "com.github.tomakehurst" % "wiremock-jre8" % "2.33.2"
   lazy val keycloakMock = "com.tngtech.keycloakmock" % "mock" % "0.12.0"
