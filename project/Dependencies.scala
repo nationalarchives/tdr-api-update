@@ -1,7 +1,7 @@
 import sbt._
 
 object Dependencies {
-  private val circeVersion = "0.14.2"
+  private val circeVersion = "0.14.3"
   private val elasticMqVersion = "1.3.9"
 
   lazy val awsUtils = "uk.gov.nationalarchives" %% "tdr-aws-utils" % "0.1.35"
@@ -15,9 +15,9 @@ object Dependencies {
   lazy val lambdaEvents = "com.amazonaws" % "aws-lambda-java-events" % "3.11.0"
   lazy val graphqlClient = "uk.gov.nationalarchives" %% "tdr-graphql-client" % "0.0.54"
   lazy val scalaLogging = "com.typesafe.scala-logging" %% "scala-logging" % "3.9.5"
-  lazy val logback = "ch.qos.logback" % "logback-classic" % "1.4.0"
+  lazy val logback = "ch.qos.logback" % "logback-classic" % "1.4.1"
   lazy val logstashLogbackEncoder = "net.logstash.logback" % "logstash-logback-encoder" % "7.2"
-  lazy val wiremock = "com.github.tomakehurst" % "wiremock-jre8" % "2.33.2"
+  lazy val wiremock = "com.github.tomakehurst" % "wiremock-jre8" % "2.34.0"
   lazy val keycloakMock = "com.tngtech.keycloakmock" % "mock" % "0.12.0"
   lazy val mockito = "org.mockito" %% "mockito-scala" % "1.17.12"
   lazy val sqs = "software.amazon.awssdk" % "sqs" % "2.17.162"
