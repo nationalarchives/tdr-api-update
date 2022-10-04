@@ -97,7 +97,7 @@ class ApiUpdateTest extends ExternalServicesTest with MockitoSugar with EitherVa
     when(client.getResult[Identity](any[BearerAccessToken], any[Document], any[Option[Variables]])(any[SttpBackend[Identity, Any]], any[ClassTag[Identity[_]]])).thenThrow(new HttpException(response))
 
     val res = ApiUpdate(config).send(keycloakUtils, client, document, variables).failed.futureValue
-    res.getMessage shouldEqual "Unexpected response from GraphQL API: Response(Left(Graphql error),503,,List(),List(),RequestMetadata(GET,http://example.com,List()))"
+    res.getMessage shouldEqual "Unexpected response from GraphQL API: Response(Left(Graphql error),503,Service Unavailable,List(),List(),RequestMetadata(GET,http://example.com,List()))"
   }
 
   "The send method" should "error if the graphql query returns not authorised errors" in {
