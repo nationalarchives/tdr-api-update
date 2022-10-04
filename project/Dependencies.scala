@@ -4,7 +4,7 @@ object Dependencies {
   private val circeVersion = "0.14.3"
   private val elasticMqVersion = "1.3.11"
 
-  lazy val awsUtils = "uk.gov.nationalarchives" %% "tdr-aws-utils" % "0.1.38"
+  lazy val awsUtils = "uk.gov.nationalarchives" %% "tdr-aws-utils" % "0.1.39"
   lazy val awsSsm = "software.amazon.awssdk" % "ssm" % "2.17.233"
   lazy val scalaTest = "org.scalatest" %% "scalatest" % "3.2.14"
   lazy val circeCore = "io.circe" %% "circe-core" % circeVersion
@@ -15,7 +15,7 @@ object Dependencies {
   lazy val lambdaEvents = "com.amazonaws" % "aws-lambda-java-events" % "3.11.0"
   lazy val graphqlClient = "uk.gov.nationalarchives" %% "tdr-graphql-client" % "0.0.59"
   lazy val scalaLogging = "com.typesafe.scala-logging" %% "scala-logging" % "3.9.5"
-  lazy val logback = "ch.qos.logback" % "logback-classic" % "1.4.1"
+  lazy val logback = "ch.qos.logback" % "logback-classic" % "1.4.3"
   lazy val logstashLogbackEncoder = "net.logstash.logback" % "logstash-logback-encoder" % "7.2"
   lazy val wiremock = "com.github.tomakehurst" % "wiremock-jre8" % "2.34.0"
   lazy val keycloakMock = "com.tngtech.keycloakmock" % "mock" % "0.12.0"
