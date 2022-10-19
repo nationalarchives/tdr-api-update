@@ -4,13 +4,13 @@ object Dependencies {
   private val circeVersion = "0.14.3"
   private val elasticMqVersion = "1.3.11"
 
-  lazy val awsUtils = "uk.gov.nationalarchives" %% "tdr-aws-utils" % "0.1.40"
+  lazy val awsUtils = "uk.gov.nationalarchives" %% "tdr-aws-utils" % "0.1.41"
   lazy val awsSsm = "software.amazon.awssdk" % "ssm" % "2.17.233"
   lazy val scalaTest = "org.scalatest" %% "scalatest" % "3.2.14"
   lazy val circeCore = "io.circe" %% "circe-core" % circeVersion
   lazy val circeGeneric = "io.circe" %% "circe-generic" % circeVersion
   lazy val circeParser = "io.circe" %% "circe-parser" % circeVersion
-  lazy val generatedGraphql = "uk.gov.nationalarchives" %% "tdr-generated-graphql" % "0.0.272"
+  lazy val generatedGraphql = "uk.gov.nationalarchives" %% "tdr-generated-graphql" % "0.0.274"
   lazy val lambdaCore = "com.amazonaws" % "aws-lambda-java-core" % "1.2.1"
   lazy val lambdaEvents = "com.amazonaws" % "aws-lambda-java-events" % "3.11.0"
   lazy val graphqlClient = "uk.gov.nationalarchives" %% "tdr-graphql-client" % "0.0.64"
@@ -24,5 +24,5 @@ object Dependencies {
   lazy val typesafe = "com.typesafe" % "config" % "1.4.2"
   lazy val elasticMq = "org.elasticmq" %% "elasticmq-server" % elasticMqVersion
   lazy val elasticMqSqs = "org.elasticmq" %% "elasticmq-rest-sqs" % elasticMqVersion
-  lazy val authUtils = "uk.gov.nationalarchives" %% "tdr-auth-utils" % "0.0.88"
+  lazy val authUtils = "uk.gov.nationalarchives" %% "tdr-auth-utils" % "0.0.89"
 }
