@@ -9,7 +9,7 @@ import org.scalatest.matchers.should.Matchers._
 import sttp.client3.Response
 import sttp.model.StatusCode
 import uk.gov.nationalarchives.api.update.utils.ExternalServicesTest
-import uk.gov.nationalarchives.aws.utils.SQSUtils
+import uk.gov.nationalarchives.aws.utils.sqs.SQSUtils
 import uk.gov.nationalarchives.tdr.error.HttpException
 
 import java.time.Instant

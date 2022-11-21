@@ -12,8 +12,10 @@ import software.amazon.awssdk.regions.Region
 import software.amazon.awssdk.services.ssm.SsmClient
 import software.amazon.awssdk.services.ssm.model.GetParameterRequest
 import uk.gov.nationalarchives.api.update.Decoders._
-import uk.gov.nationalarchives.aws.utils.Clients.{kms, sqs}
-import uk.gov.nationalarchives.aws.utils.{KMSUtils, SQSUtils}
+import uk.gov.nationalarchives.aws.utils.kms.KMSClients.kms
+import uk.gov.nationalarchives.aws.utils.sqs.SQSClients.sqs
+import uk.gov.nationalarchives.aws.utils.kms.KMSUtils
+import uk.gov.nationalarchives.aws.utils.sqs.SQSUtils
 
 import java.net.URI
 import java.time.Instant
@@ -27,11 +29,12 @@ import scala.language.postfixOps
 class Lambda {
   val configFactory: Config = ConfigFactory.load
   val kmsUtils: KMSUtils = KMSUtils(kms(configFactory.getString("kms.endpoint")), Map("LambdaFunctionName" -> configFactory.getString("function.name")))
-  val config: Map[String, String] = kmsUtils.decryptValuesFromConfig(
-    List("url.api", "url.auth", "sqs.url", "client.id")
-  ) + ("client.secret" -> getClientSecret(configFactory.getString("client.secret_path"), configFactory.getString("ssm.endpoint")))
+
+  val config: Map[String, String] = List("url.api", "url.auth", "sqs.url", "client.id")
+    .map(configName => configName -> kmsUtils.decryptValue(configFactory.getString(configName))).toMap +
+    ("client.secret" -> getClientSecret(configFactory.getString("client.secret_path"), configFactory.getString("ssm.endpoint")))
   val logger: Logger = Logger[Lambda]
-  val sqsUtils: SQSUtils = SQSUtils(sqs)
+  val sqsUtils: SQSUtils = SQSUtils(sqs(configFactory.getString("sqs.endpoint")))
 
   def getClientSecret(secretPath: String, endpoint: String): String = {
     val httpClient = ApacheHttpClient.builder.build
