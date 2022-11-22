@@ -3,9 +3,10 @@ import sbt._
 object Dependencies {
   private val circeVersion = "0.14.3"
   private val elasticMqVersion = "1.3.14"
+  private val awsUtilsVersion = "0.1.55"
 
-  lazy val sqsUtils = "uk.gov.nationalarchives" %% "sqs-utils" % "0.1.55"
-  lazy val kmsUtils = "uk.gov.nationalarchives" %% "kms-utils" % "0.1.55"
+  lazy val sqsUtils = "uk.gov.nationalarchives" %% "sqs-utils" % awsUtilsVersion
+  lazy val kmsUtils = "uk.gov.nationalarchives" %% "kms-utils" % awsUtilsVersion
   lazy val awsSsm = "software.amazon.awssdk" % "ssm" % "2.18.11"
   lazy val scalaTest = "org.scalatest" %% "scalatest" % "3.2.14"
   lazy val circeCore = "io.circe" %% "circe-core" % circeVersion
