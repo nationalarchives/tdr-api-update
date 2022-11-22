@@ -2,7 +2,7 @@ package uk.gov.nationalarchives.api.update
 
 import com.typesafe.scalalogging.Logger
 import net.logstash.logback.argument.StructuredArguments.value
-import uk.gov.nationalarchives.aws.utils.SQSUtils
+import uk.gov.nationalarchives.aws.utils.sqs.SQSUtils
 
 import java.time.Instant
 import scala.concurrent.duration.Duration
