@@ -4,7 +4,7 @@ import com.amazonaws.services.lambda.runtime.Context
 import com.amazonaws.services.lambda.runtime.events.SQSEvent
 import com.typesafe.config.{Config, ConfigFactory}
 import com.typesafe.scalalogging.Logger
-import graphql.codegen.types.{AddAntivirusMetadataInput, AddFileMetadataWithFileIdInput, FFIDMetadataInput}
+import graphql.codegen.types.{AddAntivirusMetadataInputValues, AddFileMetadataWithFileIdInput, FFIDMetadataInputValues}
 import io.circe.parser.decode
 import net.logstash.logback.argument.StructuredArguments.value
 import software.amazon.awssdk.http.apache.ApacheHttpClient
@@ -57,13 +57,13 @@ class Lambda {
       .map(r => BodyWithReceiptHandle(r.getBody, r.getReceiptHandle))
       .map(bodyWithReceiptHandle => {
         decode[Serializable](bodyWithReceiptHandle.body).map {
-          case avInput: AddAntivirusMetadataInput =>
+          case avInput: AddAntivirusMetadataInputValues =>
             val processor = new AntivirusProcessor(config)
             processor.process(avInput, bodyWithReceiptHandle.receiptHandle)
           case fileMetadataInput: AddFileMetadataWithFileIdInput =>
             val processor = new FileMetadataProcessor(config)
             processor.process(fileMetadataInput, bodyWithReceiptHandle.receiptHandle)
-          case ffidMetadataInput: FFIDMetadataInput =>
+          case ffidMetadataInput: FFIDMetadataInputValues =>
             val processor = new FileFormatProcessor(config)
             processor.process(ffidMetadataInput, bodyWithReceiptHandle.receiptHandle)
         }.left.map(circeError =>
