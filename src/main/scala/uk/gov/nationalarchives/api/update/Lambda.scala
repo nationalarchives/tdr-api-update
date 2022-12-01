@@ -1,40 +1,36 @@
 package uk.gov.nationalarchives.api.update
 
-import com.amazonaws.services.lambda.runtime.Context
-import com.amazonaws.services.lambda.runtime.events.SQSEvent
-import com.typesafe.config.{Config, ConfigFactory}
-import com.typesafe.scalalogging.Logger
-import graphql.codegen.types.{AddAntivirusMetadataInput, AddFileMetadataWithFileIdInput, FFIDMetadataInput}
+import com.typesafe.config.ConfigFactory
+import graphql.codegen.AddBulkAntivirusMetadata.{addBulkAntivirusMetadata => avbm}
+import graphql.codegen.AddBulkFFIDMetadata.{addBulkFFIDMetadata => abfim}
+import graphql.codegen.AddMultipleFileMetadata.{addMultipleFileMetadata => amfm}
+import graphql.codegen.types._
+import io.circe.{Decoder, HCursor, Json, Printer}
+import io.circe.generic.auto._
 import io.circe.parser.decode
-import net.logstash.logback.argument.StructuredArguments.value
+import io.circe.syntax._
 import software.amazon.awssdk.http.apache.ApacheHttpClient
 import software.amazon.awssdk.regions.Region
 import software.amazon.awssdk.services.ssm.SsmClient
 import software.amazon.awssdk.services.ssm.model.GetParameterRequest
-import uk.gov.nationalarchives.api.update.Decoders._
-import uk.gov.nationalarchives.aws.utils.kms.KMSClients.kms
-import uk.gov.nationalarchives.aws.utils.sqs.SQSClients.sqs
-import uk.gov.nationalarchives.aws.utils.kms.KMSUtils
-import uk.gov.nationalarchives.aws.utils.sqs.SQSUtils
+import sttp.client3.{HttpURLConnectionBackend, Identity, SttpBackend}
+import uk.gov.nationalarchives.api.update.Lambda._
+import uk.gov.nationalarchives.tdr.keycloak.{KeycloakUtils, TdrKeycloakDeployment}
 
+import java.io.{InputStream, OutputStream}
 import java.net.URI
-import java.time.Instant
-import scala.annotation.unused
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.duration._
+import java.util.UUID
 import scala.concurrent.{Await, Future}
-import scala.jdk.CollectionConverters._
-import scala.language.postfixOps
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.duration.DurationInt
+import scala.io.Source
 
 class Lambda {
-  val configFactory: Config = ConfigFactory.load
-  val kmsUtils: KMSUtils = KMSUtils(kms(configFactory.getString("kms.endpoint")), Map("LambdaFunctionName" -> configFactory.getString("function.name")))
-
-  val config: Map[String, String] = List("url.api", "url.auth", "sqs.url", "client.id")
-    .map(configName => configName -> kmsUtils.decryptValue(configFactory.getString(configName))).toMap +
-    ("client.secret" -> getClientSecret(configFactory.getString("client.secret_path"), configFactory.getString("ssm.endpoint")))
-  val logger: Logger = Logger[Lambda]
-  val sqsUtils: SQSUtils = SQSUtils(sqs(configFactory.getString("sqs.endpoint")))
+  val config: String => String = ConfigFactory.load.getString(_)
+  private val clientSecret: String = getClientSecret(config("client.secret_path"), config("ssm.endpoint"))
+  implicit val tdrKeycloakDeployment: TdrKeycloakDeployment = TdrKeycloakDeployment(config("url.auth"), "tdr", 3600)
+  private val keycloakUtils: KeycloakUtils = KeycloakUtils()
+  implicit val backend: SttpBackend[Identity, Any] = HttpURLConnectionBackend()
 
   def getClientSecret(secretPath: String, endpoint: String): String = {
     val httpClient = ApacheHttpClient.builder.build
@@ -47,30 +43,61 @@ class Lambda {
     ssmClient.getParameter(getParameterRequest).parameter().value()
   }
 
-  def update(event: SQSEvent, @unused context: Context): Unit = {
-    implicit val startTime: Instant = Instant.now
-    case class BodyWithReceiptHandle(body: String, receiptHandle: String)
-
-    logger.info("Running API update with {} messages", value("messageCount", event.getRecords.size()))
-
-    val results: List[Either[FailedApiUpdateException, Future[String]]] = event.getRecords.asScala
-      .map(r => BodyWithReceiptHandle(r.getBody, r.getReceiptHandle))
-      .map(bodyWithReceiptHandle => {
-        decode[Serializable](bodyWithReceiptHandle.body).map {
-          case avInput: AddAntivirusMetadataInput =>
-            val processor = new AntivirusProcessor(config)
-            processor.process(avInput, bodyWithReceiptHandle.receiptHandle)
-          case fileMetadataInput: AddFileMetadataWithFileIdInput =>
-            val processor = new FileMetadataProcessor(config)
-            processor.process(fileMetadataInput, bodyWithReceiptHandle.receiptHandle)
-          case ffidMetadataInput: FFIDMetadataInput =>
-            val processor = new FileFormatProcessor(config)
-            processor.process(ffidMetadataInput, bodyWithReceiptHandle.receiptHandle)
-        }.left.map(circeError =>
-          FailedApiUpdateException(bodyWithReceiptHandle.receiptHandle, circeError)
-        )
-      }).toList
-
-    Await.result(ResultCollector(config, sqsUtils).collect(results), 10 seconds)
+  def getInputs(inputStream: InputStream): Future[List[AllInputs]] = {
+    val body = Source.fromInputStream(inputStream).getLines().mkString
+    val updateInput = decode[List[File]](body) match {
+      case Left(error) => Future.failed(error)
+      case Right(value) => Future.successful(value)
+    }
+    updateInput.map(_.map(file => {
+      file.results.foldLeft(AllInputs(Nil, Nil, Nil))((allInputs, result) => {
+        result match {
+          case AV(antivirus) => allInputs.copy(avInput = antivirus :: allInputs.avInput)
+          case Checksum(checksum) =>
+            val newValue = AddFileMetadataWithFileIdInputValues("SHA256ServerSideChecksum", checksum.fileId, checksum.sha256Checksum)
+            allInputs.copy(checksumInput = newValue :: allInputs.checksumInput)
+          case FileFormat(fileFormat) => allInputs.copy(ffidInput = fileFormat :: allInputs.ffidInput)
+          case _ => throw new RuntimeException("Unexpected input")
+        }
+      })
+    }))
   }
+
+  def update(input: InputStream, output: OutputStream): Unit = {
+    val result = for {
+      allInputs <- getInputs(input)
+      token <- keycloakUtils.serviceAccountToken(config("client.id"), clientSecret)
+      _ <- RequestSender[avbm.Data, avbm.Variables]().sendRequest(token, avbm.document, avbm.Variables(AddAntivirusMetadataInput(allInputs.flatMap(_.avInput))))
+      _ <- RequestSender[amfm.Data, amfm.Variables].sendRequest(token, amfm.document, amfm.Variables(AddFileMetadataWithFileIdInput(allInputs.flatMap(_.checksumInput))))
+      _ <- RequestSender[abfim.Data, abfim.Variables].sendRequest(token, abfim.document, abfim.Variables(FFIDMetadataInput(allInputs.flatMap(_.ffidInput))))
+    } yield {
+      output.write(allInputs.asJson.printWith(Printer.noSpaces).getBytes())
+    }
+    Await.result(result, 60.seconds)
+  }
+}
+object Lambda {
+  implicit val fileDecoder: Decoder[File] = (c: HCursor) => for {
+    userId <- c.downField("userId").as[UUID]
+    fileId <- c.downField("fileId").as[UUID]
+    consignmentId <- c.downField("consignmentId").as[UUID]
+    resultsJson <- c.downField("results").as[Json]
+    av <- resultsJson.findAllByKey("antivirus").head.as[AddAntivirusMetadataInputValues]
+    fileFormat <- resultsJson.findAllByKey("fileFormat").head.as[FFIDMetadataInputValues]
+    checksum <- resultsJson.findAllByKey("checksum").head.as[ChecksumResult]
+  } yield File(fileId, userId, consignmentId, List(AV(av), FileFormat(fileFormat), Checksum(checksum)))
+
+  trait Result {}
+
+  case class AllInputs(avInput: List[AddAntivirusMetadataInputValues], checksumInput: List[AddFileMetadataWithFileIdInputValues], ffidInput: List[FFIDMetadataInputValues])
+
+  case class ChecksumResult(sha256Checksum: String, fileId: UUID)
+
+  case class AV(antivirus: AddAntivirusMetadataInputValues) extends Result
+
+  case class Checksum(checksum: ChecksumResult) extends Result
+
+  case class FileFormat(fileFormat: FFIDMetadataInputValues) extends Result
+
+  case class File(fileId: UUID, userId: UUID, consignmentId: UUID, results: List[Result])
 }

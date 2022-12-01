@@ -13,12 +13,7 @@ libraryDependencies ++= Seq(
   circeParser,
   generatedGraphql,
   graphqlClient,
-  lambdaCore,
-  lambdaEvents,
   authUtils,
-  sqsUtils,
-  kmsUtils,
-  sqs,
   typesafe,
   scalaLogging,
   logback,
@@ -26,9 +21,7 @@ libraryDependencies ++= Seq(
   mockito % Test,
   wiremock % Test,
   scalaTest % Test,
-  keycloakMock % Test,
-  elasticMq % Test,
-  elasticMqSqs % Test
+  keycloakMock % Test
 )
 
 (Test / fork) := true
