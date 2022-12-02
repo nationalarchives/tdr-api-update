@@ -4,7 +4,7 @@ import com.amazonaws.services.lambda.runtime.Context
 import com.amazonaws.services.lambda.runtime.events.SQSEvent
 import com.typesafe.config.{Config, ConfigFactory}
 import com.typesafe.scalalogging.Logger
-import graphql.codegen.types.{AddAntivirusMetadataInputValues, AddFileMetadataWithFileIdInput, FFIDMetadataInputValues}
+import graphql.codegen.types.{AddAntivirusMetadataInputValues, AddFileMetadataWithFileIdInputValues, FFIDMetadataInputValues}
 import io.circe.parser.decode
 import net.logstash.logback.argument.StructuredArguments.value
 import software.amazon.awssdk.http.apache.ApacheHttpClient
@@ -60,7 +60,7 @@ class Lambda {
           case avInput: AddAntivirusMetadataInputValues =>
             val processor = new AntivirusProcessor(config)
             processor.process(avInput, bodyWithReceiptHandle.receiptHandle)
-          case fileMetadataInput: AddFileMetadataWithFileIdInput =>
+          case fileMetadataInput: AddFileMetadataWithFileIdInputValues =>
             val processor = new FileMetadataProcessor(config)
             processor.process(fileMetadataInput, bodyWithReceiptHandle.receiptHandle)
           case ffidMetadataInput: FFIDMetadataInputValues =>
