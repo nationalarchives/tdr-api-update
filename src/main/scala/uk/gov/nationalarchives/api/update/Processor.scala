@@ -8,7 +8,7 @@ import com.typesafe.scalalogging.Logger
 import graphql.codegen.AddAntivirusMetadata.{addAntivirusMetadata => avm}
 import graphql.codegen.AddFFIDMetadata.{addFFIDMetadata => afim}
 import graphql.codegen.AddFileMetadata.{addFileMetadata => afm}
-import graphql.codegen.types.{AddAntivirusMetadataInput, AddFileMetadataWithFileIdInput, FFIDMetadataInput}
+import graphql.codegen.types.{AddAntivirusMetadataInputValues, AddFileMetadataWithFileIdInput, FFIDMetadataInputValues}
 import io.circe.generic.semiauto.deriveDecoder
 import io.circe.{Decoder, Encoder}
 import net.logstash.logback.argument.StructuredArguments.value
@@ -93,14 +93,14 @@ trait Processor[Input, Data, Variables] {
 }
 
 class AntivirusProcessor(val config: Map[String, String])(implicit val executionContext: ExecutionContext)
-  extends Processor[AddAntivirusMetadataInput, avm.Data, avm.Variables] {
+  extends Processor[AddAntivirusMetadataInputValues, avm.Data, avm.Variables] {
   override val graphQlQuery: Document = avm.document
-  override def variables(input: AddAntivirusMetadataInput): avm.Variables = avm.Variables(input)
+  override def variables(input: AddAntivirusMetadataInputValues): avm.Variables = avm.Variables(input)
   override def dataDecoder: Decoder[avm.Data] = deriveDecoder[avm.Data]
   override def variablesEncoder: Encoder[avm.Variables] = avm.Variables.jsonEncoder
 
-  override def fileCheckName(input: AddAntivirusMetadataInput): String = "antivirus"
-  override def fileId(input: AddAntivirusMetadataInput): UUID = input.fileId
+  override def fileCheckName(input: AddAntivirusMetadataInputValues): String = "antivirus"
+  override def fileId(input: AddAntivirusMetadataInputValues): UUID = input.fileId
 }
 
 class FileMetadataProcessor(val config: Map[String, String])(implicit val executionContext: ExecutionContext)
@@ -115,12 +115,12 @@ class FileMetadataProcessor(val config: Map[String, String])(implicit val execut
 }
 
 class FileFormatProcessor(val config: Map[String, String])(implicit val executionContext: ExecutionContext)
-  extends Processor[FFIDMetadataInput, afim.Data, afim.Variables] {
+  extends Processor[FFIDMetadataInputValues, afim.Data, afim.Variables] {
   override val graphQlQuery: Document = afim.document
-  override def variables(input: FFIDMetadataInput): afim.Variables = afim.Variables(input)
+  override def variables(input: FFIDMetadataInputValues): afim.Variables = afim.Variables(input)
   override def dataDecoder: Decoder[afim.Data] = deriveDecoder[afim.Data]
   override def variablesEncoder: Encoder[afim.Variables] = afim.Variables.jsonEncoder
 
-  override def fileCheckName(input: FFIDMetadataInput): String = "FFID"
-  override def fileId(input: FFIDMetadataInput): UUID = input.fileId
+  override def fileCheckName(input: FFIDMetadataInputValues): String = "FFID"
+  override def fileId(input: FFIDMetadataInputValues): UUID = input.fileId
 }

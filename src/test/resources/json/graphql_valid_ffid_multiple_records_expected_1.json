@@ -1,5 +1,5 @@
 {
-  "query": "mutation addFFIDMetadata($addFFIDMetadataInput:FFIDMetadataInput!){addFFIDMetadata(addFFIDMetadataInput:$addFFIDMetadataInput){fileId}}",
+  "query": "mutation addFFIDMetadata($addFFIDMetadataInput:FFIDMetadataInputValues!){addFFIDMetadata(addFFIDMetadataInput:$addFFIDMetadataInput){fileId}}",
   "variables": {
     "addFFIDMetadataInput": {
       "fileId": "44aaeffb-41b6-4250-97d5-f8c4aebf00a1",
