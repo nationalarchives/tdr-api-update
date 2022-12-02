@@ -1,5 +1,5 @@
 {
-  "query": "mutation addFileMetadata($addFileMetadataWithFileIdInput:AddFileMetadataWithFileIdInput!){addFileMetadata(addFileMetadataWithFileIdInput:$addFileMetadataWithFileIdInput){fileId value}}",
+  "query": "mutation addFileMetadata($addFileMetadataWithFileIdInput:AddFileMetadataWithFileIdInputValues!){addFileMetadata(addFileMetadataWithFileIdInput:$addFileMetadataWithFileIdInput){fileId value}}",
   "variables": {
     "addFileMetadataWithFileIdInput": {
       "filePropertyName": "propertyName",

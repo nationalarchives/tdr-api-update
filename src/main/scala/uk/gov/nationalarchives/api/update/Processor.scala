@@ -8,7 +8,7 @@ import com.typesafe.scalalogging.Logger
 import graphql.codegen.AddAntivirusMetadata.{addAntivirusMetadata => avm}
 import graphql.codegen.AddFFIDMetadata.{addFFIDMetadata => afim}
 import graphql.codegen.AddFileMetadata.{addFileMetadata => afm}
-import graphql.codegen.types.{AddAntivirusMetadataInputValues, AddFileMetadataWithFileIdInput, FFIDMetadataInputValues}
+import graphql.codegen.types.{AddAntivirusMetadataInputValues, AddFileMetadataWithFileIdInputValues, FFIDMetadataInputValues}
 import io.circe.generic.semiauto.deriveDecoder
 import io.circe.{Decoder, Encoder}
 import net.logstash.logback.argument.StructuredArguments.value
@@ -104,14 +104,14 @@ class AntivirusProcessor(val config: Map[String, String])(implicit val execution
 }
 
 class FileMetadataProcessor(val config: Map[String, String])(implicit val executionContext: ExecutionContext)
-  extends Processor[AddFileMetadataWithFileIdInput, afm.Data, afm.Variables] {
+  extends Processor[AddFileMetadataWithFileIdInputValues, afm.Data, afm.Variables] {
   override val graphQlQuery: Document = afm.document
-  override def variables(input: AddFileMetadataWithFileIdInput): afm.Variables = afm.Variables(input)
+  override def variables(input: AddFileMetadataWithFileIdInputValues): afm.Variables = afm.Variables(input)
   override def dataDecoder: Decoder[afm.Data] = deriveDecoder[afm.Data]
   override def variablesEncoder: Encoder[afm.Variables] = afm.Variables.jsonEncoder
 
-  override def fileCheckName(input: AddFileMetadataWithFileIdInput): String = input.filePropertyName
-  override def fileId(input: AddFileMetadataWithFileIdInput): UUID = input.fileId
+  override def fileCheckName(input: AddFileMetadataWithFileIdInputValues): String = input.filePropertyName
+  override def fileId(input: AddFileMetadataWithFileIdInputValues): UUID = input.fileId
 }
 
 class FileFormatProcessor(val config: Map[String, String])(implicit val executionContext: ExecutionContext)
