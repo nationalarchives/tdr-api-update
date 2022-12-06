@@ -73,10 +73,11 @@ class LambdaTest extends ExternalServicesTest {
     result.size should equal(1)
     val first = result.head
     first.avInput.size should equal(1)
-    first.checksumInput.size should equal(1)
+    first.fileMetadataInput.size should equal(2)
     first.ffidInput.size should equal(1)
     first.avInput.head.fileId should equal(fileId)
-    first.checksumInput.head.fileId should equal(fileId)
+    first.fileMetadataInput.head.fileId should equal(fileId)
+    first.fileMetadataInput.last.fileId should equal(fileId)
     first.ffidInput.head.fileId should equal(fileId)
   }
 
@@ -88,15 +89,16 @@ class LambdaTest extends ExternalServicesTest {
 
     inputs.size should equal(1)
     val avInput = inputs.flatMap(_.avInput)
-    val checksumInput = inputs.flatMap(_.checksumInput)
+    val fileMetadataInput = inputs.flatMap(_.fileMetadataInput)
     val ffidInput = inputs.flatMap(_.ffidInput)
 
     avInput.size should equal(1)
-    checksumInput.size should equal(1)
+    fileMetadataInput.size should equal(2)
     ffidInput.size should equal(1)
 
     avInput.head.fileId should equal(fileId)
-    checksumInput.head.fileId should equal(fileId)
+    fileMetadataInput.head.fileId should equal(fileId)
+    fileMetadataInput.last.fileId should equal(fileId)
     ffidInput.head.fileId should equal(fileId)
   }
 
@@ -104,14 +106,16 @@ class LambdaTest extends ExternalServicesTest {
     val json = "{}"
     val inputStream = new ByteArrayInputStream(json.getBytes())
     val ex = new Lambda().getInputs(inputStream).failed.futureValue
-    ex.getMessage should equal("Got value '{}' with wrong type, expecting array")
+    ex.getMessage should equal("Missing required field: DownField(results)")
   }
 
   private def getInputJson(fileId: UUID = UUID.randomUUID()): String = {
     val ffid = FileFormat(FFIDMetadataInputValues(fileId, "software", "softwareVersion", "binarySignatureFileVersion", "containerSignatureFileVersion", "method", Nil))
     val checksum = Checksum(ChecksumResult("checksum", fileId))
     val av = AV(AddAntivirusMetadataInputValues(fileId, "software", "softwareVersion", "databaseVersion", "result", 1L))
-    List(File(fileId, UUID.randomUUID(), UUID.randomUUID(), List(ffid, checksum, av))).asJson.printWith(Printer.noSpaces)
-
+    Input(List(
+      File(fileId, UUID.randomUUID(), UUID.randomUUID(), List(ffid, checksum, av))),
+      List(RedactedResult(RedactedFilePairs(UUID.randomUUID(), "original", fileId, "redacted") :: Nil, Nil))
+    ).asJson.printWith(Printer.noSpaces)
   }
 }

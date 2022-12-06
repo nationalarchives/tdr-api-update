@@ -45,22 +45,28 @@ class Lambda {
 
   def getInputs(inputStream: InputStream): Future[List[AllInputs]] = {
     val body = Source.fromInputStream(inputStream).getLines().mkString
-    val updateInput = decode[List[File]](body) match {
+    val updateInput = decode[Input](body) match {
       case Left(error) => Future.failed(error)
       case Right(value) => Future.successful(value)
     }
-    updateInput.map(_.map(file => {
-      file.results.foldLeft(AllInputs(Nil, Nil, Nil))((allInputs, result) => {
-        result match {
-          case AV(antivirus) => allInputs.copy(avInput = antivirus :: allInputs.avInput)
-          case Checksum(checksum) =>
-            val newValue = AddFileMetadataWithFileIdInputValues("SHA256ServerSideChecksum", checksum.fileId, checksum.sha256Checksum)
-            allInputs.copy(checksumInput = newValue :: allInputs.checksumInput)
-          case FileFormat(fileFormat) => allInputs.copy(ffidInput = fileFormat :: allInputs.ffidInput)
-          case _ => throw new RuntimeException("Unexpected input")
-        }
+    updateInput.map(input => {
+      input.results.map(file => {
+        file.results.foldLeft(AllInputs(Nil, Nil, Nil))((allInputs, result) => {
+          result match {
+            case AV(antivirus) => allInputs.copy(avInput = antivirus :: allInputs.avInput)
+            case Checksum(checksum) =>
+              val newValue = AddFileMetadataWithFileIdInputValues("SHA256ServerSideChecksum", checksum.fileId, checksum.sha256Checksum)
+              allInputs.copy(fileMetadataInput = newValue :: allInputs.fileMetadataInput)
+            case FileFormat(fileFormat) => allInputs.copy(ffidInput = fileFormat :: allInputs.ffidInput)
+            case _ => throw new RuntimeException("Unexpected input")
+          }
+        })
+
+      }).map(eachInput => {
+        val redactedMetadata = input.redactedResults.flatMap(_.redactedFiles.map(res => AddFileMetadataWithFileIdInputValues("OriginalFilepath", res.redactedFileId, res.originalFilePath)))
+        eachInput.copy(fileMetadataInput = eachInput.fileMetadataInput ++ redactedMetadata)
       })
-    }))
+    })
   }
 
   def update(input: InputStream, output: OutputStream): Unit = {
@@ -68,7 +74,7 @@ class Lambda {
       allInputs <- getInputs(input)
       token <- keycloakUtils.serviceAccountToken(config("client.id"), clientSecret)
       _ <- RequestSender[avbm.Data, avbm.Variables]().sendRequest(token, avbm.document, avbm.Variables(AddAntivirusMetadataInput(allInputs.flatMap(_.avInput))))
-      _ <- RequestSender[amfm.Data, amfm.Variables].sendRequest(token, amfm.document, amfm.Variables(AddFileMetadataWithFileIdInput(allInputs.flatMap(_.checksumInput))))
+      _ <- RequestSender[amfm.Data, amfm.Variables].sendRequest(token, amfm.document, amfm.Variables(AddFileMetadataWithFileIdInput(allInputs.flatMap(_.fileMetadataInput))))
       _ <- RequestSender[abfim.Data, abfim.Variables].sendRequest(token, abfim.document, abfim.Variables(FFIDMetadataInput(allInputs.flatMap(_.ffidInput))))
     } yield {
       output.write(allInputs.asJson.printWith(Printer.noSpaces).getBytes())
@@ -89,7 +95,7 @@ object Lambda {
 
   trait Result {}
 
-  case class AllInputs(avInput: List[AddAntivirusMetadataInputValues], checksumInput: List[AddFileMetadataWithFileIdInputValues], ffidInput: List[FFIDMetadataInputValues])
+  case class AllInputs(avInput: List[AddAntivirusMetadataInputValues], fileMetadataInput: List[AddFileMetadataWithFileIdInputValues], ffidInput: List[FFIDMetadataInputValues])
 
   case class ChecksumResult(sha256Checksum: String, fileId: UUID)
 
@@ -100,4 +106,12 @@ object Lambda {
   case class FileFormat(fileFormat: FFIDMetadataInputValues) extends Result
 
   case class File(fileId: UUID, userId: UUID, consignmentId: UUID, results: List[Result])
+
+  case class RedactedResult(redactedFiles: List[RedactedFilePairs], errors: List[RedactedErrors])
+
+  case class RedactedErrors(fileId: UUID, cause: String)
+
+  case class RedactedFilePairs(originalFileId: UUID, originalFilePath: String, redactedFileId: UUID, redactedFilePath: String)
+
+  case class Input(results: List[File], redactedResults: List[RedactedResult])
 }
