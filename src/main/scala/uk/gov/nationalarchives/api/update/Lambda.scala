@@ -63,7 +63,7 @@ class Lambda {
         })
 
       }).map(eachInput => {
-        val redactedMetadata = input.redactedResults.flatMap(_.redactedFiles.map(res => AddFileMetadataWithFileIdInputValues("OriginalFilepath", res.redactedFileId, res.originalFilePath)))
+        val redactedMetadata = input.redactedResults.redactedFiles.map(res => AddFileMetadataWithFileIdInputValues("OriginalFilepath", res.redactedFileId, res.originalFilePath))
         eachInput.copy(fileMetadataInput = eachInput.fileMetadataInput ++ redactedMetadata)
       })
     })
@@ -113,5 +113,5 @@ object Lambda {
 
   case class RedactedFilePairs(originalFileId: UUID, originalFilePath: String, redactedFileId: UUID, redactedFilePath: String)
 
-  case class Input(results: List[File], redactedResults: List[RedactedResult])
+  case class Input(results: List[File], redactedResults: RedactedResult)
 }
