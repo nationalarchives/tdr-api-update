@@ -14,20 +14,6 @@ import io.circe.generic.auto._
 import scala.io.Source.fromResource
 
 class ExternalServicesTest extends AnyFlatSpec with BeforeAndAfterEach with BeforeAndAfterAll with ScalaFutures {
-  implicit val fileEncoder: Encoder[File] = (file: File) => {
-    val resultsJson = file.results.map {
-      case AV(antivirus) => Json.obj(("antivirus", antivirus.asJson))
-      case Checksum(checksum) => Json.obj(("checksum", checksum.asJson))
-      case FileFormat(fileFormat) => Json.obj(("fileFormat", fileFormat.asJson))
-    }
-    Json.obj(
-      ("userId", Json.fromString(file.userId.toString)),
-      ("consignmentId", Json.fromString(file.consignmentId.toString)),
-      ("fileId", Json.fromString(file.fileId.toString)),
-      ("results", Json.fromValues(resultsJson))
-    )
-  }
-
   override implicit def patienceConfig: PatienceConfig = PatienceConfig(timeout = scaled(Span(5, Seconds)), interval = scaled(Span(100, Millis)))
 
   val wiremockGraphqlServer = new WireMockServer(9001)

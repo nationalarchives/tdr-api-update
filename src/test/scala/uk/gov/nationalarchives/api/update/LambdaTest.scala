@@ -64,21 +64,23 @@ class LambdaTest extends ExternalServicesTest {
   "The update method" should "return the correct json" in {
     authOkJson()
     graphqlOkJson()
-    val fileId = UUID.randomUUID()
+    val fileId = UUID.fromString("2ecc4d46-9c8b-46cd-b2a4-8ac2a52001b3")
     val inputStream = new ByteArrayInputStream(getInputJson(fileId).getBytes())
     val outputStream = new ByteArrayOutputStream()
     new Lambda().update(inputStream, outputStream)
-    val result = decode[List[AllInputs]](outputStream.toByteArray.map(_.toChar).mkString).toOption.get
+    val result = decode[Result](outputStream.toByteArray.map(_.toChar).mkString).toOption.get
 
-    result.size should equal(1)
-    val first = result.head
-    first.avInput.size should equal(1)
-    first.fileMetadataInput.size should equal(2)
-    first.ffidInput.size should equal(1)
-    first.avInput.head.fileId should equal(fileId)
-    first.fileMetadataInput.head.fileId should equal(fileId)
-    first.fileMetadataInput.last.fileId should equal(fileId)
-    first.ffidInput.head.fileId should equal(fileId)
+    val av = result.antivirus.addBulkAntivirusMetadata
+    val file = result.file.addMultipleFileMetadata
+    val ffid = result.ffid.addBulkFFIDMetadata
+
+    av.size should equal(1)
+    file.size should equal(1)
+    ffid.size should equal(1)
+    av.head.fileId should equal(fileId)
+    file.head.fileId should equal(fileId)
+    file.last.fileId should equal(fileId)
+    ffid.head.fileId should equal(fileId)
   }
 
   "The getInputs method" should "return the correct results for valid json" in {
@@ -87,13 +89,12 @@ class LambdaTest extends ExternalServicesTest {
     val inputStream = new ByteArrayInputStream(json.getBytes())
     val inputs = new Lambda().getInputs(inputStream).futureValue
 
-    inputs.size should equal(1)
-    val avInput = inputs.flatMap(_.avInput)
-    val fileMetadataInput = inputs.flatMap(_.fileMetadataInput)
-    val ffidInput = inputs.flatMap(_.ffidInput)
+    val avInput = inputs.results.flatMap(_.fileCheckResults.antivirus)
+    val fileMetadataInput = inputs.results.flatMap(_.fileCheckResults.checksum)
+    val ffidInput = inputs.results.flatMap(_.fileCheckResults.fileFormat)
 
     avInput.size should equal(1)
-    fileMetadataInput.size should equal(2)
+    fileMetadataInput.size should equal(1)
     ffidInput.size should equal(1)
 
     avInput.head.fileId should equal(fileId)
@@ -110,12 +111,12 @@ class LambdaTest extends ExternalServicesTest {
   }
 
   private def getInputJson(fileId: UUID = UUID.randomUUID()): String = {
-    val ffid = FileFormat(FFIDMetadataInputValues(fileId, "software", "softwareVersion", "binarySignatureFileVersion", "containerSignatureFileVersion", "method", Nil))
-    val checksum = Checksum(ChecksumResult("checksum", fileId))
-    val av = AV(AddAntivirusMetadataInputValues(fileId, "software", "softwareVersion", "databaseVersion", "result", 1L))
-    Input(List(
-      File(fileId, UUID.randomUUID(), UUID.randomUUID(), List(ffid, checksum, av))),
-      List(RedactedResult(RedactedFilePairs(UUID.randomUUID(), "original", fileId, "redacted") :: Nil, Nil))
+    val ffid = FFIDMetadataInputValues(fileId, "software", "softwareVersion", "binarySignatureFileVersion", "containerSignatureFileVersion", "method", Nil) :: Nil
+    val checksum = ChecksumResult("checksum", fileId) :: Nil
+    val av = AddAntivirusMetadataInputValues(fileId, "software", "softwareVersion", "databaseVersion", "result", 1L) :: Nil
+    Input(
+      List(File(fileId, UUID.randomUUID(), UUID.randomUUID(), "0", "originalFilePath", "checksum", FileCheckResults(av, checksum, ffid))),
+      RedactedResult(RedactedFilePairs(UUID.randomUUID(), "original", fileId, "redacted") :: Nil, Nil)
     ).asJson.printWith(Printer.noSpaces)
   }
 }

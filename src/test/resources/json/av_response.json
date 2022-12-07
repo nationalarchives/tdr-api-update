@@ -2,7 +2,7 @@
   "data": {
     "addBulkAntivirusMetadata": [
       {
-        "fileId": "07a3a4bd-0281-4a6d-a4c1-8fa3239e1313",
+        "fileId": "2ecc4d46-9c8b-46cd-b2a4-8ac2a52001b3",
         "software": "yara",
         "softwareVersion": "0.1",
         "databaseVersion": "database-version",
