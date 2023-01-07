@@ -7,7 +7,7 @@ object Dependencies {
 
   lazy val sqsUtils = "uk.gov.nationalarchives" %% "sqs-utils" % awsUtilsVersion
   lazy val kmsUtils = "uk.gov.nationalarchives" %% "kms-utils" % awsUtilsVersion
-  lazy val awsSsm = "software.amazon.awssdk" % "ssm" % "2.19.9"
+  lazy val awsSsm = "software.amazon.awssdk" % "ssm" % "2.19.12"
   lazy val scalaTest = "org.scalatest" %% "scalatest" % "3.2.14"
   lazy val circeCore = "io.circe" %% "circe-core" % circeVersion
   lazy val circeGeneric = "io.circe" %% "circe-generic" % circeVersion
@@ -22,7 +22,7 @@ object Dependencies {
   lazy val wiremock = "com.github.tomakehurst" % "wiremock-jre8" % "2.35.0"
   lazy val keycloakMock = "com.tngtech.keycloakmock" % "mock" % "0.12.0"
   lazy val mockito = "org.mockito" %% "mockito-scala" % "1.17.12"
-  lazy val sqs = "software.amazon.awssdk" % "sqs" % "2.19.9"
+  lazy val sqs = "software.amazon.awssdk" % "sqs" % "2.19.12"
   lazy val typesafe = "com.typesafe" % "config" % "1.4.2"
   lazy val elasticMq = "org.elasticmq" %% "elasticmq-server" % elasticMqVersion
   lazy val elasticMqSqs = "org.elasticmq" %% "elasticmq-rest-sqs" % elasticMqVersion
