@@ -8,7 +8,7 @@ object Dependencies {
   lazy val sqsUtils = "uk.gov.nationalarchives" %% "sqs-utils" % awsUtilsVersion
   lazy val kmsUtils = "uk.gov.nationalarchives" %% "kms-utils" % awsUtilsVersion
   lazy val awsSsm = "software.amazon.awssdk" % "ssm" % "2.19.9"
-  lazy val scalaTest = "org.scalatest" %% "scalatest" % "3.2.14"
+  lazy val scalaTest = "org.scalatest" %% "scalatest" % "3.2.15"
   lazy val circeCore = "io.circe" %% "circe-core" % circeVersion
   lazy val circeGeneric = "io.circe" %% "circe-generic" % circeVersion
   lazy val circeParser = "io.circe" %% "circe-parser" % circeVersion
