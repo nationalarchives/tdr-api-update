@@ -3,7 +3,7 @@ import sbt._
 object Dependencies {
   private val circeVersion = "0.14.3"
   private val elasticMqVersion = "1.3.14"
-  private val awsUtilsVersion = "0.1.64"
+  private val awsUtilsVersion = "0.1.65"
 
   lazy val sqsUtils = "uk.gov.nationalarchives" %% "sqs-utils" % awsUtilsVersion
   lazy val kmsUtils = "uk.gov.nationalarchives" %% "kms-utils" % awsUtilsVersion
@@ -26,5 +26,5 @@ object Dependencies {
   lazy val typesafe = "com.typesafe" % "config" % "1.4.2"
   lazy val elasticMq = "org.elasticmq" %% "elasticmq-server" % elasticMqVersion
   lazy val elasticMqSqs = "org.elasticmq" %% "elasticmq-rest-sqs" % elasticMqVersion
-  lazy val authUtils = "uk.gov.nationalarchives" %% "tdr-auth-utils" % "0.0.105"
+  lazy val authUtils = "uk.gov.nationalarchives" %% "tdr-auth-utils" % "0.0.106"
 }
