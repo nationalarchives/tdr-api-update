@@ -62,7 +62,6 @@ class Lambda {
   def sendStatuses(input: Input, token: BearerAccessToken): Future[Statuses] = {
     val (consignmentStatuses, fileStatuses) = input.statuses.statuses.partition(_.statusType == "Consignment")
 
-
     for {
       _ <- Future.sequence {
         consignmentStatuses.map(consignmentStatus => {
