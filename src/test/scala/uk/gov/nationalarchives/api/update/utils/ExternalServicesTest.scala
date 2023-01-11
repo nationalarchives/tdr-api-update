@@ -3,14 +3,11 @@ package uk.gov.nationalarchives.api.update.utils
 import com.github.tomakehurst.wiremock.WireMockServer
 import com.github.tomakehurst.wiremock.client.WireMock._
 import com.github.tomakehurst.wiremock.stubbing.StubMapping
-import io.circe.{Encoder, Json}
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.time.{Millis, Seconds, Span}
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach}
-import uk.gov.nationalarchives.api.update.Lambda._
-import io.circe.syntax._
-import io.circe.generic.auto._
+
 import scala.io.Source.fromResource
 
 class ExternalServicesTest extends AnyFlatSpec with BeforeAndAfterEach with BeforeAndAfterAll with ScalaFutures {
@@ -44,6 +41,10 @@ class ExternalServicesTest extends AnyFlatSpec with BeforeAndAfterEach with Befo
     wiremockGraphqlServer.stubFor(post(urlEqualTo(graphQlPath))
       .withRequestBody(containing("addMultipleFileMetadata"))
       .willReturn(okJson(fromResource(s"json/checksum_response.json").mkString)))
+
+    wiremockGraphqlServer.stubFor(post(urlEqualTo(graphQlPath))
+      .withRequestBody(containing("addConsignmentStatus"))
+      .willReturn(okJson(fromResource(s"json/consignment_status_response.json").mkString)))
   }
 
   def authOkJson(): StubMapping = wiremockAuthServer.stubFor(post(urlEqualTo(authPath))

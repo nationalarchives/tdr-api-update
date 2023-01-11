@@ -34,10 +34,11 @@ class LambdaTest extends ExternalServicesTest {
     lambda.update(inputStream, new ByteArrayOutputStream())
 
     val serveEvents = wiremockGraphqlServer.getAllServeEvents.asScala
-    serveEvents.size should equal(3)
+    serveEvents.size should equal(4)
     serveEvents.count(_.getRequest.getBodyAsString.contains("addBulkAntivirusMetadata")) should equal(1)
     serveEvents.count(_.getRequest.getBodyAsString.contains("addBulkFFIDMetadata")) should equal(1)
     serveEvents.count(_.getRequest.getBodyAsString.contains("addMultipleFileMetadata")) should equal(1)
+    serveEvents.count(_.getRequest.getBodyAsString.contains("addConsignmentStatus")) should equal(1)
   }
 
   "The update method" should "return an error if there is an error from keycloak" in {
@@ -116,7 +117,8 @@ class LambdaTest extends ExternalServicesTest {
     val av = AddAntivirusMetadataInputValues(fileId, "software", "softwareVersion", "databaseVersion", "result", 1L) :: Nil
     Input(
       List(File(fileId, UUID.randomUUID(), UUID.randomUUID(), "0", "originalFilePath", "checksum", FileCheckResults(av, checksum, ffid))),
-      RedactedResult(RedactedFilePairs(UUID.randomUUID(), "original", fileId, "redacted") :: Nil, Nil)
+      RedactedResult(RedactedFilePairs(UUID.randomUUID(), "original", fileId, "redacted") :: Nil, Nil),
+      Statuses(Status(UUID.randomUUID(), "Consignment", "Status", "StatusValue", overwrite = false) :: Nil),
     ).asJson.printWith(Printer.noSpaces)
   }
 }

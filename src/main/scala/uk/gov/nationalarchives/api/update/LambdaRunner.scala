@@ -12,6 +12,7 @@ object LambdaRunner extends App {
       |      "originalPath": "smallfile/subfolder/subfolder-nested/subfolder-nested-1.txt",
       |      "fileSize": "2",
       |      "clientChecksum": "87428fc522803d31065e7bce3cf03fe475096631e5e07bbd7a0fde60c4cf25c7",
+      |      "consignmentType": "standard",
       |      "consignmentId": "cedba409-c806-439f-8982-943afb03c85a",
       |      "userId": "030cf12c-8d5d-46b9-b86a-38e0920d0e1a",
       |      "fileCheckResults": {
@@ -54,6 +55,17 @@ object LambdaRunner extends App {
       |  "redactedResults": {
       |    "redactedFiles": [],
       |    "errors": []
+      |  },
+      |  "statuses": {
+      |    "statuses": [
+      |      {
+      |        "id": "12edbedc-48e1-4342-846a-fb772289790c",
+      |        "statusType": "File",
+      |        "statusName": "FFID",
+      |        "statusValue": "Success",
+      |        "overwrite": false
+      |      }
+      |    ]
       |  }
       |}
       |""".stripMargin
@@ -61,5 +73,6 @@ object LambdaRunner extends App {
   val baos = new ByteArrayInputStream(body.getBytes())
   val output = new ByteArrayOutputStream()
   new Lambda().update(baos, output)
-
+  val res = output.toByteArray.map(_.toChar).mkString
+  println(res)
 }
