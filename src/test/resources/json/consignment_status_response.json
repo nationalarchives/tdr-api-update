@@ -1,0 +1,11 @@
+{
+  "data": {
+    "addConsignmentStatus": {
+      "consignmentStatusId": "4f9c6a1f-b395-4165-9039-c1620ffd1200",
+      "consignmentId": "3d524b18-3094-4fae-b0aa-426694910f0f",
+      "statusType": "ServerFFID",
+      "value": "InProgress",
+      "createdDatetime": "2023-01-10T15:32:49Z"
+    }
+  }
+}

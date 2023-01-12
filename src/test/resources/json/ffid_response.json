@@ -1,0 +1,22 @@
+{
+  "data": {
+    "addBulkFFIDMetadata": [
+      {
+        "fileId": "2ecc4d46-9c8b-46cd-b2a4-8ac2a52001b3",
+        "method": "pronom",
+        "softwareVersion": "1.8.0",
+        "datetime": 1593507071091,
+        "software": "pronom",
+        "matches": [
+          {
+            "puid": "x-fmt/111",
+            "identificationBasis": "Some basis",
+            "extension": "txt"
+          }
+        ],
+        "containerSignatureFileVersion": "container-signature-20200121.xml",
+        "binarySignatureFileVersion": "DROID_SignatureFile_V96.xml"
+      }
+    ]
+  }
+}

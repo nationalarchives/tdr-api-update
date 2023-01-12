@@ -1,8 +1,0 @@
-library("tdr-jenkinslib")
-
-deployToLambda(
-        stage: params.STAGE,
-        libraryName: "api-update",
-        version: params.TO_DEPLOY,
-        deploymentPackageName: "api-update.jar"
-)
