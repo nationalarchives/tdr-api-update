@@ -6,6 +6,7 @@ import graphql.codegen.AddBulkAntivirusMetadata.{addBulkAntivirusMetadata => avb
 import graphql.codegen.AddBulkFFIDMetadata.{addBulkFFIDMetadata => abfim}
 import graphql.codegen.AddMultipleFileMetadata.{addMultipleFileMetadata => amfm}
 import graphql.codegen.AddConsignmentStatus.{addConsignmentStatus => acs}
+import graphql.codegen.UpdateConsignmentStatus.{updateConsignmentStatus => ucs}
 import graphql.codegen.AddMultipleFileStatuses.{addMultipleFileStatuses => amfs}
 import graphql.codegen.types._
 import io.circe.Printer
@@ -65,8 +66,14 @@ class Lambda {
     for {
       _ <- Future.sequence {
         consignmentStatuses.map(consignmentStatus => {
-          val consignmentStatusVariables = acs.Variables(ConsignmentStatusInput(consignmentStatus.id, consignmentStatus.statusName, Option(consignmentStatus.statusValue)))
-          RequestSender[acs.Data, acs.Variables].sendRequest(token, acs.document, consignmentStatusVariables)
+          val statusInput = ConsignmentStatusInput(consignmentStatus.id, consignmentStatus.statusName, Option(consignmentStatus.statusValue))
+          if(consignmentStatus.overwrite) {
+            val updateConsignmentStatusVariables = ucs.Variables(statusInput)
+            RequestSender[ucs.Data, ucs.Variables].sendRequest(token, ucs.document, updateConsignmentStatusVariables)
+          } else {
+            val consignmentStatusVariables = acs.Variables(statusInput)
+            RequestSender[acs.Data, acs.Variables].sendRequest(token, acs.document, consignmentStatusVariables)
+          }
         })
       }
       _ <- if (fileStatuses.nonEmpty) {

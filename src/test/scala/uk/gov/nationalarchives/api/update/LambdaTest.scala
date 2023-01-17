@@ -34,11 +34,12 @@ class LambdaTest extends ExternalServicesTest {
     lambda.update(inputStream, new ByteArrayOutputStream())
 
     val serveEvents = wiremockGraphqlServer.getAllServeEvents.asScala
-    serveEvents.size should equal(4)
+    serveEvents.size should equal(5)
     serveEvents.count(_.getRequest.getBodyAsString.contains("addBulkAntivirusMetadata")) should equal(1)
     serveEvents.count(_.getRequest.getBodyAsString.contains("addBulkFFIDMetadata")) should equal(1)
     serveEvents.count(_.getRequest.getBodyAsString.contains("addMultipleFileMetadata")) should equal(1)
     serveEvents.count(_.getRequest.getBodyAsString.contains("addConsignmentStatus")) should equal(1)
+    serveEvents.count(_.getRequest.getBodyAsString.contains("updateConsignmentStatus")) should equal(1)
   }
 
   "The update method" should "return an error if there is an error from keycloak" in {
@@ -118,7 +119,12 @@ class LambdaTest extends ExternalServicesTest {
     Input(
       List(File(fileId, UUID.randomUUID(), UUID.randomUUID(), "0", "originalFilePath", "checksum", FileCheckResults(av, checksum, ffid))),
       RedactedResult(RedactedFilePairs(UUID.randomUUID(), "original", fileId, "redacted") :: Nil, Nil),
-      Statuses(Status(UUID.randomUUID(), "Consignment", "Status", "StatusValue", overwrite = false) :: Nil),
+      Statuses(
+        List(
+          Status(UUID.randomUUID(), "Consignment", "Status", "StatusValue", overwrite = false),
+          Status(UUID.randomUUID(), "Consignment", "OverwriteStatus", "OverwriteStatusValue", overwrite = true)
+        )
+      )
     ).asJson.printWith(Printer.noSpaces)
   }
 }
