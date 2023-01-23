@@ -4,11 +4,11 @@ import com.nimbusds.oauth2.sdk.token.BearerAccessToken
 import com.typesafe.config.ConfigFactory
 import graphql.codegen.AddBulkAntivirusMetadata.{addBulkAntivirusMetadata => avbm}
 import graphql.codegen.AddBulkFFIDMetadata.{addBulkFFIDMetadata => abfim}
-import graphql.codegen.AddMultipleFileMetadata.{addMultipleFileMetadata => amfm}
 import graphql.codegen.AddConsignmentStatus.{addConsignmentStatus => acs}
-import graphql.codegen.UpdateConsignmentStatus.{updateConsignmentStatus => ucs}
+import graphql.codegen.AddMultipleFileMetadata.{addMultipleFileMetadata => amfm}
 import graphql.codegen.AddMultipleFileStatuses.{addMultipleFileStatuses => amfs}
-import graphql.codegen.types._
+import graphql.codegen.UpdateConsignmentStatus.{updateConsignmentStatus => ucs}
+import graphql.codegen.types.{FFIDMetadataInputMatches, _}
 import io.circe.Printer
 import io.circe.generic.auto._
 import io.circe.parser.decode
@@ -18,12 +18,12 @@ import software.amazon.awssdk.regions.Region
 import software.amazon.awssdk.services.ssm.SsmClient
 import software.amazon.awssdk.services.ssm.model.GetParameterRequest
 import sttp.client3.{HttpURLConnectionBackend, Identity, SttpBackend}
-import uk.gov.nationalarchives.api.update.Lambda._
+import uk.gov.nationalarchives.BackendCheckUtils
+import uk.gov.nationalarchives.BackendCheckUtils._
 import uk.gov.nationalarchives.tdr.keycloak.{KeycloakUtils, TdrKeycloakDeployment}
 
 import java.io.{InputStream, OutputStream}
 import java.net.URI
-import java.util.UUID
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.DurationInt
 import scala.concurrent.{Await, Future}
@@ -36,6 +36,11 @@ class Lambda {
   private val keycloakUtils: KeycloakUtils = KeycloakUtils()
   implicit val backend: SttpBackend[Identity, Any] = HttpURLConnectionBackend()
 
+  private val endpoint = sys.env("S3_ENDPOINT")
+
+  val backendCheckUtils: BackendCheckUtils = BackendCheckUtils(endpoint)
+
+
   def getClientSecret(secretPath: String, endpoint: String): String = {
     val httpClient = ApacheHttpClient.builder.build
     val ssmClient: SsmClient = SsmClient.builder()
@@ -47,20 +52,21 @@ class Lambda {
     ssmClient.getParameter(getParameterRequest).parameter().value()
   }
 
-  def getInputs(inputStream: InputStream): Future[Input] = {
-    val body = Source.fromInputStream(inputStream).getLines().mkString
-    decode[Input](body) match {
+  def getInput(inputStream: InputStream): Future[(Input, S3Input)] =
+    (for {
+      s3Input <- decode[S3Input](Source.fromInputStream(inputStream).getLines().mkString)
+      input <- backendCheckUtils.getResultJson(s3Input.key, s3Input.bucket)
+    } yield (input, s3Input)) match {
       case Left(error) => Future.failed(error)
-      case Right(input) => Future.successful(input)
+      case Right(inputs) => Future.successful(inputs)
     }
-  }
 
   def getFileMetadata(input: Input): List[AddFileMetadataWithFileIdInputValues] = {
     input.results.flatMap(_.fileCheckResults.checksum.map(c => AddFileMetadataWithFileIdInputValues("SHA256ServerSideChecksum", c.fileId, c.sha256Checksum))) ++
     input.redactedResults.redactedFiles.map(r => AddFileMetadataWithFileIdInputValues("OriginalFilepath", r.redactedFileId, r.originalFilePath))
   }
 
-  def sendStatuses(input: Input, token: BearerAccessToken): Future[Statuses] = {
+  def sendStatuses(input: Input, token: BearerAccessToken): Future[StatusResult] = {
     val (consignmentStatuses, fileStatuses) = input.statuses.statuses.partition(_.statusType == "Consignment")
 
     for {
@@ -85,46 +91,41 @@ class Lambda {
     } yield input.statuses
   }
 
+  def writeResults(resultJson: String, s3Input: S3Input): Future[S3Input] =
+    backendCheckUtils.writeResultJson(s3Input.key, s3Input.bucket, resultJson) match {
+      case Left(err) => Future.failed(err)
+      case Right(value) => Future.successful(value)
+    }
+
+  def avVariables(input: Input): avbm.Variables = {
+    val avResults: List[AddAntivirusMetadataInputValues] = input.results
+      .flatMap(_.fileCheckResults.antivirus
+        .map(av => AddAntivirusMetadataInputValues(av.fileId, av.software, av.softwareVersion, av.databaseVersion, av.result, av.datetime)))
+    avbm.Variables(AddAntivirusMetadataInput(avResults))
+  }
+
+  def ffidVariables(input: Input): abfim.Variables = {
+    abfim.Variables(FFIDMetadataInput(input.results
+      .flatMap(_.fileCheckResults.fileFormat
+        .map(ff => {
+          val matches = ff.matches.map(m => FFIDMetadataInputMatches(m.extension, m.identificationBasis, m.puid))
+          FFIDMetadataInputValues(ff.fileId, ff.software, ff.softwareVersion ,ff.binarySignatureFileVersion, ff.containerSignatureFileVersion, ff.method, matches)
+        }))))
+  }
+
   def update(inputStream: InputStream, output: OutputStream): Unit = {
+
     val result = for {
-      input <- getInputs(inputStream)
+      (input, s3Input) <- getInput(inputStream)
       token <- keycloakUtils.serviceAccountToken(config("client.id"), clientSecret)
-      av: avbm.Data <- RequestSender[avbm.Data, avbm.Variables]().sendRequest(token, avbm.document, avbm.Variables(AddAntivirusMetadataInput(input.results.flatMap(_.fileCheckResults.antivirus))))
-      file: amfm.Data <- RequestSender[amfm.Data, amfm.Variables].sendRequest(token, amfm.document, amfm.Variables(AddFileMetadataWithFileIdInput(getFileMetadata(input))))
-      ffid: abfim.Data <- RequestSender[abfim.Data, abfim.Variables].sendRequest(token, abfim.document, abfim.Variables(FFIDMetadataInput(input.results.flatMap(_.fileCheckResults.fileFormat))))
-      statuses <- sendStatuses(input, token)
+      _: avbm.Data <- RequestSender[avbm.Data, avbm.Variables].sendRequest(token, avbm.document, avVariables(input))
+      _: amfm.Data <- RequestSender[amfm.Data, amfm.Variables].sendRequest(token, amfm.document, amfm.Variables(AddFileMetadataWithFileIdInput(getFileMetadata(input))))
+      _: abfim.Data <- RequestSender[abfim.Data, abfim.Variables].sendRequest(token, abfim.document, ffidVariables(input))
+      _ <- sendStatuses(input, token)
+      _ <- writeResults(input.results.asJson.printWith(Printer.noSpaces), s3Input)
     } yield {
-      output.write(Result(av, file, ffid, statuses).asJson.printWith(Printer.noSpaces).getBytes())
+      output.write(inputStream.readAllBytes())
     }
     Await.result(result, 60.seconds)
   }
-}
-
-object Lambda {
-  case class Result(antivirus: avbm.Data, file: amfm.Data, ffid: abfim.Data, statuses: Statuses)
-
-  case class ChecksumResult(sha256Checksum: String, fileId: UUID)
-
-  case class FileCheckResults(antivirus: List[AddAntivirusMetadataInputValues], checksum: List[ChecksumResult], fileFormat: List[FFIDMetadataInputValues])
-
-  case class File(fileId: UUID,
-                  userId: UUID,
-                  consignmentId: UUID,
-                  fileSize: String,
-                  clientChecksum: String,
-                  originalPath: String,
-                  fileCheckResults: FileCheckResults
-                 )
-
-  case class RedactedResult(redactedFiles: List[RedactedFilePairs], errors: List[RedactedErrors])
-
-  case class RedactedErrors(fileId: UUID, cause: String)
-
-  case class RedactedFilePairs(originalFileId: UUID, originalFilePath: String, redactedFileId: UUID, redactedFilePath: String)
-
-  case class Input(results: List[File], redactedResults: RedactedResult, statuses: Statuses)
-
-  case class Statuses(statuses: List[Status])
-
-  case class Status(id: UUID, statusType: String, statusName: String, statusValue: String, overwrite: Boolean)
 }
