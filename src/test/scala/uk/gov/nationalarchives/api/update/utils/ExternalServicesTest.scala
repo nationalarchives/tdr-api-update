@@ -7,6 +7,7 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.time.{Millis, Seconds, Span}
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach}
+import uk.gov.nationalarchives.BackendCheckUtils.S3Input
 
 import scala.io.Source.fromResource
 
@@ -16,12 +17,23 @@ class ExternalServicesTest extends AnyFlatSpec with BeforeAndAfterEach with Befo
   val wiremockGraphqlServer = new WireMockServer(9001)
   val wiremockAuthServer = new WireMockServer(9002)
   val wiremockSsmServer = new WireMockServer(9004)
+  val wiremockS3Server = new WireMockServer(9005)
 
   def setupSsmServer(): Unit = {
     wiremockSsmServer
       .stubFor(post(urlEqualTo("/"))
         .willReturn(okJson("{\"Parameter\":{\"Name\":\"string\",\"Value\":\"string\"}}"))
       )
+  }
+
+  def setupS3ForWrite(): Unit = {
+    wiremockS3Server.stubFor(put(anyUrl()).willReturn(ok()))
+  }
+
+  def putJsonFile(s3Input: S3Input, inputJson: String): S3Input = {
+    wiremockS3Server
+      .stubFor(get(urlEqualTo(s"/${s3Input.bucket}/${s3Input.key}")).willReturn(ok(inputJson)))
+    s3Input
   }
 
   val graphQlPath = "/graphql"
@@ -59,15 +71,18 @@ class ExternalServicesTest extends AnyFlatSpec with BeforeAndAfterEach with Befo
   }
 
   override def beforeAll(): Unit = {
+    setupS3ForWrite()
     wiremockGraphqlServer.start()
     wiremockAuthServer.start()
     wiremockSsmServer.start()
+    wiremockS3Server.start()
   }
 
   override def afterAll(): Unit = {
     wiremockGraphqlServer.stop()
     wiremockAuthServer.stop()
     wiremockSsmServer.stop()
+    wiremockS3Server.stop()
   }
 
   override def afterEach(): Unit = {
