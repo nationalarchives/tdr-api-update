@@ -111,7 +111,7 @@ class LambdaTest extends ExternalServicesTest {
     val json = "{}"
     val inputStream = new ByteArrayInputStream(json.getBytes())
     val ex = new Lambda().getInput(inputStream).failed.futureValue
-    ex.getMessage should equal("Missing required field: DownField(key)")
+    ex.getMessage should equal("DecodingFailure at .key: Missing required field")
   }
 
   def setupS3(fileId: UUID = UUID.randomUUID()): String = {
