@@ -1,7 +1,7 @@
 import sbt._
 
 object Dependencies {
-  private val circeVersion = "0.14.4"
+  private val circeVersion = "0.14.5"
   private val elasticMqVersion = "1.3.14"
   private val awsUtilsVersion = "0.1.65"
 
@@ -20,5 +20,5 @@ object Dependencies {
   lazy val keycloakMock = "com.tngtech.keycloakmock" % "mock" % "0.13.0"
   lazy val mockito = "org.mockito" %% "mockito-scala" % "1.17.12"
   lazy val typesafe = "com.typesafe" % "config" % "1.4.2"
-  lazy val authUtils = "uk.gov.nationalarchives" %% "tdr-auth-utils" % "0.0.116"
+  lazy val authUtils = "uk.gov.nationalarchives" %% "tdr-auth-utils" % "0.0.118"
 }
