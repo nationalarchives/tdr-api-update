@@ -11,7 +11,9 @@
           {
             "puid": "x-fmt/111",
             "identificationBasis": "Some basis",
-            "extension": "txt"
+            "extension": "txt",
+            "fileExtensionMismatch": false,
+            "formatName": "format-name"
           }
         ],
         "containerSignatureFileVersion": "container-signature-20200121.xml",

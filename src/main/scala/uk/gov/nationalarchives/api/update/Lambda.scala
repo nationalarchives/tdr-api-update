@@ -108,7 +108,7 @@ class Lambda {
     abfim.Variables(FFIDMetadataInput(input.results
       .flatMap(_.fileCheckResults.fileFormat
         .map(ff => {
-          val matches = ff.matches.map(m => FFIDMetadataInputMatches(m.extension, m.identificationBasis, m.puid, Option(false), Option("")))
+          val matches = ff.matches.map(m => FFIDMetadataInputMatches(m.extension, m.identificationBasis, m.puid, m.fileExtensionMismatch, m.formatName))
           FFIDMetadataInputValues(ff.fileId, ff.software, ff.softwareVersion ,ff.binarySignatureFileVersion, ff.containerSignatureFileVersion, ff.method, matches)
         }))))
   }
