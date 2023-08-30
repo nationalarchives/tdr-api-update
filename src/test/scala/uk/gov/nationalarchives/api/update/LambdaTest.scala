@@ -86,6 +86,7 @@ class LambdaTest extends ExternalServicesTest {
     file.head.fileId should equal(fileId)
     file.last.fileId should equal(fileId)
     ffid.head.fileId should equal(fileId)
+    ffid.head.matches.size should equal(1)
   }
 
   "The getInputs method" should "return the correct results for valid json" in {
@@ -105,6 +106,14 @@ class LambdaTest extends ExternalServicesTest {
     fileMetadataInput.head.fileId should equal(fileId)
     fileMetadataInput.last.fileId should equal(fileId)
     ffidInput.head.fileId should equal(fileId)
+
+    val ffidMatches = ffidInput.head.matches
+    ffidMatches.size should equal(1)
+    ffidMatches.head.formatName should equal(Some("format-name"))
+    ffidMatches.head.fileExtensionMismatch should equal(Some(false))
+    ffidMatches.head.puid should equal(Some("x-fmt/111"))
+    ffidMatches.head.extension should equal(Some("txt"))
+    ffidMatches.head.identificationBasis should equal("Some basis")
   }
 
   "The getInputs method" should "return an error for invalid json" in {
@@ -127,7 +136,8 @@ class LambdaTest extends ExternalServicesTest {
     }).getOrElse(Nil)
 
   private def getInputJson(fileId: UUID = UUID.randomUUID()): String = {
-    val ffid = FFID(fileId, "software", "softwareVersion", "binarySignatureFileVersion", "containerSignatureFileVersion", "method", Nil) :: Nil
+    val ffidMatch = FFIDMetadataInputMatches(Some("txt"), "Some basis", Some("x-fmt/111"), Some(false), Some("format-name"))
+    val ffid = FFID(fileId, "software", "softwareVersion", "binarySignatureFileVersion", "containerSignatureFileVersion", "method", ffidMatch :: Nil) :: Nil
     val checksum = ChecksumResult("checksum", fileId) :: Nil
     val av = Antivirus(fileId, "software", "softwareVersion", "databaseVersion", "result", 1L) :: Nil
     Input(
