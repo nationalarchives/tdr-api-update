@@ -18,7 +18,7 @@ object Dependencies {
   lazy val logstashLogbackEncoder = "net.logstash.logback" % "logstash-logback-encoder" % "7.4"
   lazy val wiremock = "com.github.tomakehurst" % "wiremock-jre8" % "2.35.0"
   lazy val keycloakMock = "com.tngtech.keycloakmock" % "mock" % "0.15.1"
-  lazy val mockito = "org.mockito" %% "mockito-scala" % "1.17.14"
+  lazy val mockito = "org.mockito" %% "mockito-scala" % "1.17.22"
   lazy val typesafe = "com.typesafe" % "config" % "1.4.2"
   lazy val authUtils = "uk.gov.nationalarchives" %% "tdr-auth-utils" % "0.0.157"
 }
