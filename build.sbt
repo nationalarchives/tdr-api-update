@@ -20,7 +20,7 @@ libraryDependencies ++= Seq(
   logback,
   logstashLogbackEncoder,
   mockito % Test,
-  wiremock % Test,
+  wiremockStandalone % Test,
   scalaTest % Test,
   keycloakMock % Test
 )
