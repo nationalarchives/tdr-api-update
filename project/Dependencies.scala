@@ -7,7 +7,7 @@ object Dependencies {
 
   lazy val awsSsm = "software.amazon.awssdk" % "ssm" % "2.20.1"
   lazy val backendCheckUtils = "uk.gov.nationalarchives" %% "tdr-backend-checks-utils" % "0.1.25"
-  lazy val scalaTest = "org.scalatest" %% "scalatest" % "3.2.16"
+  lazy val scalaTest = "org.scalatest" %% "scalatest" % "3.2.17"
   lazy val circeCore = "io.circe" %% "circe-core" % circeVersion
   lazy val circeGeneric = "io.circe" %% "circe-generic" % circeVersion
   lazy val circeParser = "io.circe" %% "circe-parser" % circeVersion
@@ -17,8 +17,8 @@ object Dependencies {
   lazy val logback = "ch.qos.logback" % "logback-classic" % "1.4.11"
   lazy val logstashLogbackEncoder = "net.logstash.logback" % "logstash-logback-encoder" % "7.4"
   lazy val wiremockStandalone = "com.github.tomakehurst" % "wiremock-standalone" % "3.0.1"
-  lazy val keycloakMock = "com.tngtech.keycloakmock" % "mock" % "0.15.1"
+  lazy val keycloakMock = "com.tngtech.keycloakmock" % "mock" % "0.15.2"
   lazy val mockito = "org.mockito" %% "mockito-scala" % "1.17.22"
   lazy val typesafe = "com.typesafe" % "config" % "1.4.2"
-  lazy val authUtils = "uk.gov.nationalarchives" %% "tdr-auth-utils" % "0.0.161"
+  lazy val authUtils = "uk.gov.nationalarchives" %% "tdr-auth-utils" % "0.0.162"
 }
