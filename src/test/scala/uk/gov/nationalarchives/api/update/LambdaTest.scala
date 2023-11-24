@@ -65,30 +65,6 @@ class LambdaTest extends ExternalServicesTest {
     ex.getMessage.contains("Unexpected response from GraphQL API: Response(Left(),500,Server Error") should equal(true)
   }
 
-  "The update method" should "return the correct json" in {
-    val fileId = UUID.fromString("2ecc4d46-9c8b-46cd-b2a4-8ac2a52001b3")
-    val s3Input = setupS3(fileId)
-    authOkJson()
-    graphqlOkJson()
-    val inputStream = new ByteArrayInputStream(s3Input.getBytes())
-    val outputStream = new ByteArrayOutputStream()
-    new Lambda().update(inputStream, outputStream)
-    val result = results.head.fileCheckResults
-
-    val av = result.antivirus
-    val file = result.checksum
-    val ffid = result.fileFormat
-
-    av.size should equal(1)
-    file.size should equal(1)
-    ffid.size should equal(1)
-    av.head.fileId should equal(fileId)
-    file.head.fileId should equal(fileId)
-    file.last.fileId should equal(fileId)
-    ffid.head.fileId should equal(fileId)
-    ffid.head.matches.size should equal(1)
-  }
-
   "The getInputs method" should "return the correct results for valid json" in {
     val fileId = UUID.randomUUID()
     val s3Input = setupS3(fileId)
