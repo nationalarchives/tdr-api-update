@@ -9,8 +9,10 @@ import graphql.codegen.AddMultipleFileMetadata.{addMultipleFileMetadata => amfm}
 import graphql.codegen.AddMultipleFileStatuses.{addMultipleFileStatuses => amfs}
 import graphql.codegen.UpdateConsignmentStatus.{updateConsignmentStatus => ucs}
 import graphql.codegen.types.{FFIDMetadataInputMatches, _}
+import io.circe.Printer
 import io.circe.generic.auto._
 import io.circe.parser.decode
+import io.circe.syntax._
 import software.amazon.awssdk.http.apache.ApacheHttpClient
 import software.amazon.awssdk.regions.Region
 import software.amazon.awssdk.services.ssm.SsmClient
@@ -88,6 +90,12 @@ class Lambda {
     } yield input.statuses
   }
 
+  def writeResults(resultJson: String, s3Input: S3Input): Future[S3Input] =
+    backendCheckUtils.writeResultJson(s3Input.key, s3Input.bucket, resultJson) match {
+      case Left(err) => Future.failed(err)
+      case Right(value) => Future.successful(value)
+    }
+
   def avVariables(input: Input): avbm.Variables = {
     val avResults: List[AddAntivirusMetadataInputValues] = input.results
       .flatMap(_.fileCheckResults.antivirus
@@ -107,12 +115,13 @@ class Lambda {
   def update(inputStream: InputStream, output: OutputStream): Unit = {
 
     val result = for {
-      (input, _) <- getInput(inputStream)
+      (input, s3Input) <- getInput(inputStream)
       token <- keycloakUtils.serviceAccountToken(config("client.id"), clientSecret)
       _: avbm.Data <- RequestSender[avbm.Data, avbm.Variables].sendRequest(token, avbm.document, avVariables(input))
       _: amfm.Data <- RequestSender[amfm.Data, amfm.Variables].sendRequest(token, amfm.document, amfm.Variables(AddFileMetadataWithFileIdInput(getFileMetadata(input))))
       _: abfim.Data <- RequestSender[abfim.Data, abfim.Variables].sendRequest(token, abfim.document, ffidVariables(input))
       _ <- sendStatuses(input, token)
+      _ <- writeResults(input.results.asJson.printWith(Printer.noSpaces), s3Input)
     } yield {
       output.write(inputStream.readAllBytes())
     }
