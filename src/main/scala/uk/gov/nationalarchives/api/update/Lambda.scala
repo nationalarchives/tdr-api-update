@@ -24,6 +24,7 @@ import uk.gov.nationalarchives.tdr.keycloak.{KeycloakUtils, TdrKeycloakDeploymen
 
 import java.io.{InputStream, OutputStream}
 import java.net.URI
+import java.util.Calendar
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.DurationInt
 import scala.concurrent.{Await, Future}
@@ -113,7 +114,7 @@ class Lambda {
   }
 
   def update(inputStream: InputStream, output: OutputStream): Unit = {
-
+    println("=A=>" + Calendar.getInstance())
     val result = for {
       (input, s3Input) <- getInput(inputStream)
       token <- keycloakUtils.serviceAccountToken(config("client.id"), clientSecret)
@@ -125,6 +126,8 @@ class Lambda {
     } yield {
       output.write(inputStream.readAllBytes())
     }
-    Await.result(result, 90.seconds)
+    println("=B=>" + Calendar.getInstance())
+    Await.result(result, 1200.seconds)
+    println("=C=>" + Calendar.getInstance())
   }
 }
