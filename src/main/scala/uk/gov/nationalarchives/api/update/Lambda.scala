@@ -24,7 +24,6 @@ import uk.gov.nationalarchives.tdr.keycloak.{KeycloakUtils, TdrKeycloakDeploymen
 
 import java.io.{InputStream, OutputStream}
 import java.net.URI
-import java.util.Calendar
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.DurationInt
 import scala.concurrent.{Await, Future}
@@ -83,8 +82,11 @@ class Lambda {
         })
       }
       _ <- if (fileStatuses.nonEmpty) {
-        val fileStatusVariables = amfs.Variables(AddMultipleFileStatusesInput(fileStatuses.map(fs => AddFileStatusInput(fs.id, fs.statusName, fs.statusValue))))
-        RequestSender[amfs.Data, amfs.Variables].sendRequest(token, amfs.document, fileStatusVariables)
+        val resultingFutures = fileStatuses.grouped(10000).map { fsGroup =>
+          val fileStatusVariables = amfs.Variables(AddMultipleFileStatusesInput(fsGroup.map(fs => AddFileStatusInput(fs.id, fs.statusName, fs.statusValue))))
+          RequestSender[amfs.Data, amfs.Variables].sendRequest(token, amfs.document, fileStatusVariables)
+        }
+        Future.sequence(resultingFutures)
       } else {
         Future()
       }
@@ -114,7 +116,7 @@ class Lambda {
   }
 
   def update(inputStream: InputStream, output: OutputStream): Unit = {
-    println("=A=>" + Calendar.getInstance())
+
     val result = for {
       (input, s3Input) <- getInput(inputStream)
       token <- keycloakUtils.serviceAccountToken(config("client.id"), clientSecret)
@@ -126,8 +128,6 @@ class Lambda {
     } yield {
       output.write(inputStream.readAllBytes())
     }
-    println("=B=>" + Calendar.getInstance())
-    Await.result(result, 1200.seconds)
-    println("=C=>" + Calendar.getInstance())
+    Await.result(result, 600.seconds)
   }
 }
