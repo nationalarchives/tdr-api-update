@@ -129,6 +129,6 @@ class Lambda {
     } yield {
       output.write(inputStream.readAllBytes())
     }
-    Await.result(result, 600.seconds)
+    Await.result(result, 480.seconds)
   }
 }
