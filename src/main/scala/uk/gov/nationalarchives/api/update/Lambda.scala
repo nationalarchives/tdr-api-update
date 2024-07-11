@@ -37,6 +37,7 @@ class Lambda {
   implicit val backend: SttpBackend[Identity, Any] = HttpURLConnectionBackend()
 
   private val endpoint = sys.env("S3_ENDPOINT")
+  private val batchSizeForFileStatusUpdates = 10000
 
   val backendCheckUtils: BackendCheckUtils = BackendCheckUtils(endpoint)
 
@@ -82,8 +83,11 @@ class Lambda {
         })
       }
       _ <- if (fileStatuses.nonEmpty) {
-        val fileStatusVariables = amfs.Variables(AddMultipleFileStatusesInput(fileStatuses.map(fs => AddFileStatusInput(fs.id, fs.statusName, fs.statusValue))))
-        RequestSender[amfs.Data, amfs.Variables].sendRequest(token, amfs.document, fileStatusVariables)
+        val resultingFutures = fileStatuses.grouped(batchSizeForFileStatusUpdates).map { fsGroup =>
+          val fileStatusVariables = amfs.Variables(AddMultipleFileStatusesInput(fsGroup.map(fs => AddFileStatusInput(fs.id, fs.statusName, fs.statusValue))))
+          RequestSender[amfs.Data, amfs.Variables].sendRequest(token, amfs.document, fileStatusVariables)
+        }
+        Future.sequence(resultingFutures)
       } else {
         Future()
       }
@@ -125,6 +129,6 @@ class Lambda {
     } yield {
       output.write(inputStream.readAllBytes())
     }
-    Await.result(result, 90.seconds)
+    Await.result(result, 480.seconds)
   }
 }
