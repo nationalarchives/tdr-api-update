@@ -6,19 +6,19 @@ object Dependencies {
   private val awsUtilsVersion = "0.1.65" 
 
   lazy val awsSsm = "software.amazon.awssdk" % "ssm" % "2.26.27"
-  lazy val backendCheckUtils = "uk.gov.nationalarchives" %% "tdr-backend-checks-utils" % "0.1.92"
+  lazy val backendCheckUtils = "uk.gov.nationalarchives" %% "tdr-backend-checks-utils" % "0.1.94"
   lazy val scalaTest = "org.scalatest" %% "scalatest" % "3.2.19"
   lazy val circeCore = "io.circe" %% "circe-core" % circeVersion
   lazy val circeGeneric = "io.circe" %% "circe-generic" % circeVersion
   lazy val circeParser = "io.circe" %% "circe-parser" % circeVersion
   lazy val generatedGraphql = "uk.gov.nationalarchives" %% "tdr-generated-graphql" % "0.0.400"
-  lazy val graphqlClient = "uk.gov.nationalarchives" %% "tdr-graphql-client" % "0.0.198"
+  lazy val graphqlClient = "uk.gov.nationalarchives" %% "tdr-graphql-client" % "0.0.201"
   lazy val scalaLogging = "com.typesafe.scala-logging" %% "scala-logging" % "3.9.5"
-  lazy val logback = "ch.qos.logback" % "logback-classic" % "1.5.15"
+  lazy val logback = "ch.qos.logback" % "logback-classic" % "1.5.16"
   lazy val logstashLogbackEncoder = "net.logstash.logback" % "logstash-logback-encoder" % "8.0"
   lazy val wiremockStandalone = "com.github.tomakehurst" % "wiremock-standalone" % "3.0.1"
   lazy val keycloakMock = "com.tngtech.keycloakmock" % "mock" % "0.17.0"
   lazy val mockito = "org.mockito" %% "mockito-scala" % "1.17.37"
   lazy val typesafe = "com.typesafe" % "config" % "1.4.3"
-  lazy val authUtils = "uk.gov.nationalarchives" %% "tdr-auth-utils" % "0.0.223"
+  lazy val authUtils = "uk.gov.nationalarchives" %% "tdr-auth-utils" % "0.0.224"
 }
