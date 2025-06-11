@@ -141,7 +141,7 @@ class LambdaTest extends ExternalServicesTest {
     val checksum = ChecksumResult("checksum", fileId) :: Nil
     val av = Antivirus(fileId, "software", "softwareVersion", "databaseVersion", "result", 1L) :: Nil
     Input(
-      List(File(UUID.randomUUID(), fileId, UUID.randomUUID(), "standard", "0", "originalFilePath", "checksum", FileCheckResults(av, checksum, ffid))),
+      List(File(UUID.randomUUID(), fileId, UUID.randomUUID(), "standard", "0", "originalFilePath", "checksum", "source-bucket", "object/key", FileCheckResults(av, checksum, ffid))),
       RedactedResults(RedactedFilePairs(UUID.randomUUID(), "original", fileId, "redacted") :: Nil, Nil),
       StatusResult(
         List(
