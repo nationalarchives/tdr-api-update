@@ -67,12 +67,16 @@ class LambdaTest extends ExternalServicesTest {
 
   "The update method" should "return the correct json" in {
     val fileId = UUID.fromString("2ecc4d46-9c8b-46cd-b2a4-8ac2a52001b3")
-    val s3Input = setupS3(fileId)
+    val s3Input = setupS3(fileId, Some("source-bucket"), Some("source/object/key"))
     authOkJson()
     graphqlOkJson()
     val inputStream = new ByteArrayInputStream(s3Input.getBytes())
     val outputStream = new ByteArrayOutputStream()
     new Lambda().update(inputStream, outputStream)
+
+    results.head.s3SourceBucket.get should equal("source-bucket")
+    results.head.s3SourceBucketKey.get should equal("source/object/key")
+
     val result = results.head.fileCheckResults
 
     val av = result.antivirus
@@ -89,14 +93,32 @@ class LambdaTest extends ExternalServicesTest {
     ffid.head.matches.size should equal(1)
   }
 
+  "The update method" should "not error when optional s3 source state is not present" in {
+    val fileId = UUID.fromString("2ecc4d46-9c8b-46cd-b2a4-8ac2a52001b3")
+    val s3Input = setupS3(fileId)
+    authOkJson()
+    graphqlOkJson()
+    val inputStream = new ByteArrayInputStream(s3Input.getBytes())
+    val outputStream = new ByteArrayOutputStream()
+    new Lambda().update(inputStream, outputStream)
+
+    results.head.s3SourceBucket should equal(None)
+    results.head.s3SourceBucketKey should equal(None)
+  }
+
   "The getInputs method" should "return the correct results for valid json" in {
     val fileId = UUID.randomUUID()
-    val s3Input = setupS3(fileId)
+    val s3Input = setupS3(fileId, Some("source-bucket"), Some("source/object/key"))
     val inputStream = new ByteArrayInputStream(s3Input.getBytes())
     val (input, _) = new Lambda().getInput(inputStream).futureValue
+    val s3SourceBucket = input.results.flatMap(_.s3SourceBucket.get)
+    val s3SourceBucketKey = input.results.flatMap(_.s3SourceBucketKey.get)
     val avInput = input.results.flatMap(_.fileCheckResults.antivirus)
     val fileMetadataInput = input.results.flatMap(_.fileCheckResults.checksum)
     val ffidInput = input.results.flatMap(_.fileCheckResults.fileFormat)
+
+    s3SourceBucket.mkString should equal("source-bucket")
+    s3SourceBucketKey.mkString should equal("source/object/key")
 
     avInput.size should equal(1)
     fileMetadataInput.size should equal(1)
@@ -116,6 +138,17 @@ class LambdaTest extends ExternalServicesTest {
     ffidMatches.head.identificationBasis should equal("Some basis")
   }
 
+  "The getInputs method" should "not error when optional s3 source state is not present" in {
+    val fileId = UUID.randomUUID()
+    val s3Input = setupS3(fileId)
+    val inputStream = new ByteArrayInputStream(s3Input.getBytes())
+    val (input, _) = new Lambda().getInput(inputStream).futureValue
+    val s3SourceBucket = input.results.flatMap(_.s3SourceBucket)
+    val s3SourceBucketKey = input.results.flatMap(_.s3SourceBucketKey)
+    s3SourceBucket.mkString should equal("")
+    s3SourceBucketKey.mkString should equal("")
+  }
+
   "The getInputs method" should "return an error for invalid json" in {
     val json = "{}"
     val inputStream = new ByteArrayInputStream(json.getBytes())
@@ -123,8 +156,8 @@ class LambdaTest extends ExternalServicesTest {
     ex.getMessage should equal("DecodingFailure at .key: Missing required field")
   }
 
-  def setupS3(fileId: UUID = UUID.randomUUID()): String = {
-    val inputJson = getInputJson(fileId)
+  def setupS3(fileId: UUID = UUID.randomUUID(), s3SourceBucket: Option[String] = None, s3SourceBucketKey: Option[String] = None): String = {
+    val inputJson = getInputJson(fileId, s3SourceBucket, s3SourceBucketKey)
     val s3Input = S3Input("testKey", "testBucket")
     putJsonFile(s3Input, inputJson).asJson.printWith(noSpaces)
   }
@@ -135,13 +168,13 @@ class LambdaTest extends ExternalServicesTest {
       decode[List[File]](bodyString).toOption
     }).getOrElse(Nil)
 
-  private def getInputJson(fileId: UUID = UUID.randomUUID()): String = {
+  private def getInputJson(fileId: UUID = UUID.randomUUID(), s3SourceBucket: Option[String], s3SourceBucketKey: Option[String]): String = {
     val ffidMatch = FFIDMetadataInputMatches(Some("txt"), "Some basis", Some("x-fmt/111"), Some(false), Some("format-name"))
     val ffid = FFID(fileId, "software", "softwareVersion", "binarySignatureFileVersion", "containerSignatureFileVersion", "method", ffidMatch :: Nil) :: Nil
     val checksum = ChecksumResult("checksum", fileId) :: Nil
     val av = Antivirus(fileId, "software", "softwareVersion", "databaseVersion", "result", 1L) :: Nil
     Input(
-      List(File(UUID.randomUUID(), fileId, UUID.randomUUID(), "standard", "0", "originalFilePath", "checksum", "source-bucket", "object/key", FileCheckResults(av, checksum, ffid))),
+      List(File(UUID.randomUUID(), fileId, UUID.randomUUID(), "standard", "0", "originalFilePath", "checksum", s3SourceBucket, s3SourceBucketKey, FileCheckResults(av, checksum, ffid))),
       RedactedResults(RedactedFilePairs(UUID.randomUUID(), "original", fileId, "redacted") :: Nil, Nil),
       StatusResult(
         List(
@@ -149,6 +182,6 @@ class LambdaTest extends ExternalServicesTest {
           Status(UUID.randomUUID(), "Consignment", "OverwriteStatus", "OverwriteStatusValue", overwrite = true)
         )
       )
-    ).asJson.printWith(noSpaces)
+    ).asJson.deepDropNullValues.printWith(noSpaces)
   }
 }
