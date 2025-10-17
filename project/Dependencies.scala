@@ -5,14 +5,14 @@ object Dependencies {
   private val elasticMqVersion = "1.3.14"
   private val awsUtilsVersion = "0.1.65" 
 
-  lazy val awsSsm = "software.amazon.awssdk" % "ssm" % "2.34.7"
-  lazy val backendCheckUtils = "uk.gov.nationalarchives" %% "tdr-backend-checks-utils" % "0.1.144"
+  lazy val awsSsm = "software.amazon.awssdk" % "ssm" % "2.34.9"
+  lazy val backendCheckUtils = "uk.gov.nationalarchives" %% "tdr-backend-checks-utils" % "0.1.145"
   lazy val scalaTest = "org.scalatest" %% "scalatest" % "3.2.19"
   lazy val circeCore = "io.circe" %% "circe-core" % circeVersion
   lazy val circeGeneric = "io.circe" %% "circe-generic" % circeVersion
   lazy val circeParser = "io.circe" %% "circe-parser" % circeVersion
-  lazy val generatedGraphql = "uk.gov.nationalarchives" %% "tdr-generated-graphql" % "0.0.436"
-  lazy val graphqlClient = "uk.gov.nationalarchives" %% "tdr-graphql-client" % "0.0.255"
+  lazy val generatedGraphql = "uk.gov.nationalarchives" %% "tdr-generated-graphql" % "0.0.438"
+  lazy val graphqlClient = "uk.gov.nationalarchives" %% "tdr-graphql-client" % "0.0.256"
   lazy val scalaLogging = "com.typesafe.scala-logging" %% "scala-logging" % "3.9.6"
   lazy val logback = "ch.qos.logback" % "logback-classic" % "1.5.19"
   lazy val logstashLogbackEncoder = "net.logstash.logback" % "logstash-logback-encoder" % "8.1"
