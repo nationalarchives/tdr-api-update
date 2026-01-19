@@ -14,7 +14,7 @@ object Dependencies {
   lazy val generatedGraphql = "uk.gov.nationalarchives" %% "tdr-generated-graphql" % "0.0.446"
   lazy val graphqlClient = "uk.gov.nationalarchives" %% "tdr-graphql-client" % "0.0.264"
   lazy val scalaLogging = "com.typesafe.scala-logging" %% "scala-logging" % "3.9.6"
-  lazy val logback = "ch.qos.logback" % "logback-classic" % "1.5.24"
+  lazy val logback = "ch.qos.logback" % "logback-classic" % "1.5.25"
   lazy val logstashLogbackEncoder = "net.logstash.logback" % "logstash-logback-encoder" % "9.0"
   lazy val wiremockStandalone = "com.github.tomakehurst" % "wiremock-standalone" % "3.0.1"
   lazy val keycloakMock = "com.tngtech.keycloakmock" % "mock" % "0.19.0"
