@@ -20,5 +20,5 @@ object Dependencies {
   lazy val keycloakMock = "com.tngtech.keycloakmock" % "mock" % "0.20.0"
   lazy val mockito = "org.mockito" %% "mockito-scala" % "2.1.0"
   lazy val typesafe = "com.typesafe" % "config" % "1.4.6"
-  lazy val authUtils = "uk.gov.nationalarchives" %% "tdr-auth-utils" % "0.0.276"
+  lazy val authUtils = "uk.gov.nationalarchives" %% "tdr-auth-utils" % "0.0.277"
 }
