@@ -5,7 +5,7 @@ on:
       - master
 jobs:
   pre-deploy:
-    uses: nationalarchives/tdr-github-actions/.github/workflows/lambda_build.yml@4cce7fa069b9dbecddbdacd9350f66adc50ac815 # v.0.0.22
+    uses: nationalarchives/tdr-github-actions/.github/workflows/lambda_build.yml@683912c0ebb8d5d6edd15a222677395e95d12ce0 # v.0.0.24
     with:
       lambda-name: api-update-v2
       repo-name: tdr-api-update
