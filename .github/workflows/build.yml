@@ -7,6 +7,9 @@ permissions:
   contents: read
 jobs:
   pre-deploy:
+    permissions:
+      contents: write
+      id-token: write
     uses: nationalarchives/tdr-github-actions/.github/workflows/lambda_build.yml@9bc380ff482dca2db5537334883eed89faa07452 # v.0.0.32
     with:
       lambda-name: api-update-v2
