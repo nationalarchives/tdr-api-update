@@ -3,6 +3,9 @@ on:
   push:
     branches:
       - master
+permissions:
+  contents: read
+  actions: write
 jobs:
   pre-deploy:
     uses: nationalarchives/tdr-github-actions/.github/workflows/lambda_build.yml@9bc380ff482dca2db5537334883eed89faa07452 # v.0.0.32
