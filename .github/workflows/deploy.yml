@@ -21,7 +21,7 @@ permissions:
   contents: write
 jobs:
   deploy:
-    uses: nationalarchives/tdr-github-actions/.github/workflows/lambda_deploy.yml@4cce7fa069b9dbecddbdacd9350f66adc50ac815 # v.0.0.22
+    uses: nationalarchives/tdr-github-actions/.github/workflows/lambda_deploy.yml@9bc380ff482dca2db5537334883eed89faa07452 # v.0.0.32
     with:
       lambda-name: api-update-v2
       deployment-package: api-update.jar
