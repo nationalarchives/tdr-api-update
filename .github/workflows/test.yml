@@ -10,7 +10,7 @@ permissions:
   contents: write
 jobs:
   test:
-    uses: nationalarchives/tdr-github-actions/.github/workflows/tdr_test.yml@9bc380ff482dca2db5537334883eed89faa07452 # v.0.0.32
+    uses: nationalarchives/tdr-github-actions/.github/workflows/tdr_test.yml@27efbc03aaaa9696eea85ab7a9363d6f92733471 # v.0.0.34
     with:
       java-version: '17'
       repo-name: tdr-api-update
