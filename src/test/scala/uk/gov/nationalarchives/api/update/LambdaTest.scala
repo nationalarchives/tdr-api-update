@@ -4,8 +4,8 @@ import com.github.tomakehurst.wiremock.client.WireMock.{equalToJson, postRequest
 import com.github.tomakehurst.wiremock.http.RequestMethod
 import io.circe.Printer.noSpaces
 import io.circe.generic.auto._
-import io.circe.syntax._
 import io.circe.parser.decode
+import io.circe.syntax._
 import org.scalatest.matchers.should.Matchers._
 import sttp.client3.HttpError
 import uk.gov.nationalarchives.BackendCheckUtils._
@@ -67,7 +67,7 @@ class LambdaTest extends ExternalServicesTest {
 
   "The update method" should "return the correct json" in {
     val fileId = UUID.fromString("2ecc4d46-9c8b-46cd-b2a4-8ac2a52001b3")
-    val s3Input = setupS3(fileId, Some("source-bucket"), Some("source/object/key"))
+    val s3Input = setupS3(fileId, Some("source-bucket"), Some("source/object/key"), Some("quarantine-bucket"), Some("quarantine/object/key"), Some("upload-bucket"), Some("upload/object/key"))
     authOkJson()
     graphqlOkJson()
     val inputStream = new ByteArrayInputStream(s3Input.getBytes())
@@ -76,6 +76,10 @@ class LambdaTest extends ExternalServicesTest {
 
     results.head.s3SourceBucket.get should equal("source-bucket")
     results.head.s3SourceBucketKey.get should equal("source/object/key")
+    results.head.s3QuarantineBucket.get should equal("quarantine-bucket")
+    results.head.s3QuarantineBucketKey.get should equal("quarantine/object/key")
+    results.head.s3CleanDestinationBucket.get should equal("upload-bucket")
+    results.head.s3CleanDestinationBucketKey.get should equal("upload/object/key")
 
     val result = results.head.fileCheckResults
 
@@ -156,8 +160,14 @@ class LambdaTest extends ExternalServicesTest {
     ex.getMessage should equal("DecodingFailure at .key: Missing required field")
   }
 
-  def setupS3(fileId: UUID = UUID.randomUUID(), s3SourceBucket: Option[String] = None, s3SourceBucketKey: Option[String] = None): String = {
-    val inputJson = getInputJson(fileId, s3SourceBucket, s3SourceBucketKey)
+  def setupS3(fileId: UUID = UUID.randomUUID(),
+              s3SourceBucket: Option[String] = None,
+              s3SourceBucketKey: Option[String] = None,
+              s3QuarantineBucket: Option[String] = None,
+              s3QuarantineBucketKey: Option[String] = None,
+              s3CleanDestinationBucket: Option[String] = None,
+              s3CleanDestinationBucketKey: Option[String] = None): String = {
+    val inputJson = getInputJson(fileId, s3SourceBucket, s3SourceBucketKey, s3QuarantineBucket, s3QuarantineBucketKey, s3CleanDestinationBucket, s3CleanDestinationBucketKey)
     val s3Input = S3Input("testKey", "testBucket")
     putJsonFile(s3Input, inputJson).asJson.printWith(noSpaces)
   }
@@ -168,13 +178,33 @@ class LambdaTest extends ExternalServicesTest {
       decode[List[File]](bodyString).toOption
     }).getOrElse(Nil)
 
-  private def getInputJson(fileId: UUID = UUID.randomUUID(), s3SourceBucket: Option[String], s3SourceBucketKey: Option[String]): String = {
+  private def getInputJson(fileId: UUID = UUID.randomUUID(),
+                           s3SourceBucket: Option[String],
+                           s3SourceBucketKey: Option[String],
+                           s3QuarantineBucket: Option[String],
+                           s3QuarantineBucketKey: Option[String],
+                           s3CleanDestinationBucket: Option[String],
+                           s3CleanDestinationBucketKey: Option[String]): String = {
     val ffidMatch = FFIDMetadataInputMatches(Some("txt"), "Some basis", Some("x-fmt/111"), Some(false), Some("format-name"))
     val ffid = FFID(fileId, "software", "softwareVersion", "binarySignatureFileVersion", "containerSignatureFileVersion", "method", ffidMatch :: Nil) :: Nil
     val checksum = ChecksumResult("checksum", fileId) :: Nil
     val av = Antivirus(fileId, "software", "softwareVersion", "databaseVersion", "result", 1L) :: Nil
     Input(
-      List(File(UUID.randomUUID(), fileId, UUID.randomUUID(), "standard", "0", "originalFilePath", "checksum", s3SourceBucket, s3SourceBucketKey, FileCheckResults(av, checksum, ffid))),
+      List(File(
+        UUID.randomUUID(),
+        fileId,
+        UUID.randomUUID(),
+        "standard", "0",
+        "originalFilePath",
+        "checksum",
+        s3SourceBucket,
+        s3SourceBucketKey,
+        s3QuarantineBucket,
+        s3QuarantineBucketKey,
+        s3CleanDestinationBucket,
+        s3CleanDestinationBucketKey,
+        FileCheckResults(av, checksum, ffid)
+      )),
       RedactedResults(RedactedFilePairs(UUID.randomUUID(), "original", fileId, "redacted") :: Nil, Nil),
       StatusResult(
         List(
