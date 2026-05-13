@@ -72,7 +72,7 @@ class Lambda {
     for {
       _ <- Future.sequence {
         consignmentStatuses.map(consignmentStatus => {
-          val statusInput = ConsignmentStatusInput(consignmentStatus.id, consignmentStatus.statusName, Option(consignmentStatus.statusValue), None)
+          val statusInput = ConsignmentStatusInput(consignmentStatus.id, consignmentStatus.statusName, Option(consignmentStatus.statusValue), None, None)
           if(consignmentStatus.overwrite) {
             val updateConsignmentStatusVariables = ucs.Variables(statusInput)
             RequestSender[ucs.Data, ucs.Variables].sendRequest(token, ucs.document, updateConsignmentStatusVariables)
