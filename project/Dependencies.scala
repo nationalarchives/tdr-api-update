@@ -19,6 +19,6 @@ object Dependencies {
   lazy val wiremockStandalone = "com.github.tomakehurst" % "wiremock-standalone" % "3.0.1"
   lazy val keycloakMock = "com.tngtech.keycloakmock" % "mock" % "0.20.0"
   lazy val mockito = "org.mockito" %% "mockito-scala" % "2.2.1"
-  lazy val typesafe = "com.typesafe" % "config" % "1.4.7"
+  lazy val typesafe = "com.typesafe" % "config" % "1.4.8"
   lazy val authUtils = "uk.gov.nationalarchives" %% "tdr-auth-utils" % "0.0.283"
 }
