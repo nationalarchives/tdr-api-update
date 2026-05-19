@@ -1,0 +1,11 @@
+{
+  "data": {
+    "addMultipleFileStatuses": [
+      {
+        "fileId": "2ecc4d46-9c8b-46cd-b2a4-8ac2a52001b3",
+        "statusType": "FileStatus",
+        "statusValue": "FileStatusValue"
+      }
+    ]
+  }
+}

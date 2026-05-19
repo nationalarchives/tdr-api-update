@@ -13,6 +13,7 @@ import uk.gov.nationalarchives.api.update.utils.ExternalServicesTest
 import uk.gov.nationalarchives.tdr.error.HttpException
 
 import java.io.{ByteArrayInputStream, ByteArrayOutputStream}
+import java.nio.charset.StandardCharsets
 import java.util.UUID
 import scala.jdk.CollectionConverters.ListHasAsScala
 
@@ -35,12 +36,21 @@ class LambdaTest extends ExternalServicesTest {
     lambda.update(inputStream, new ByteArrayOutputStream())
 
     val serveEvents = wiremockGraphqlServer.getAllServeEvents.asScala
-    serveEvents.size should equal(5)
+    serveEvents.size should equal(6)
     serveEvents.count(_.getRequest.getBodyAsString.contains("addBulkAntivirusMetadata")) should equal(1)
     serveEvents.count(_.getRequest.getBodyAsString.contains("addBulkFFIDMetadata")) should equal(1)
     serveEvents.count(_.getRequest.getBodyAsString.contains("addMultipleFileMetadata")) should equal(1)
+    serveEvents.count(_.getRequest.getBodyAsString.contains("addMultipleFileStatuses")) should equal(1)
     serveEvents.count(_.getRequest.getBodyAsString.contains("addConsignmentStatus")) should equal(1)
     serveEvents.count(_.getRequest.getBodyAsString.contains("updateConsignmentStatus")) should equal(1)
+
+    val statusRequestBodies = serveEvents.toList
+      .sortBy(_.getRequest.getLoggedDate)
+      .map(_.getRequest.getBodyAsString)
+      .filter(body => body.contains("addMultipleFileStatuses") || body.contains("ConsignmentStatus"))
+
+    statusRequestBodies.head should include("addMultipleFileStatuses")
+    statusRequestBodies.tail.foreach(_ should not include "addMultipleFileStatuses")
   }
 
   "The update method" should "return an error if there is an error from keycloak" in {
@@ -73,6 +83,7 @@ class LambdaTest extends ExternalServicesTest {
     val inputStream = new ByteArrayInputStream(s3Input.getBytes())
     val outputStream = new ByteArrayOutputStream()
     new Lambda().update(inputStream, outputStream)
+    outputStream.toString(StandardCharsets.UTF_8) should equal(results.asJson.printWith(noSpaces))
 
     results.head.s3SourceBucket.get should equal("source-bucket")
     results.head.s3SourceBucketKey.get should equal("source/object/key")
@@ -209,7 +220,8 @@ class LambdaTest extends ExternalServicesTest {
       StatusResult(
         List(
           Status(UUID.randomUUID(), "Consignment", "Status", "StatusValue", overwrite = false),
-          Status(UUID.randomUUID(), "Consignment", "OverwriteStatus", "OverwriteStatusValue", overwrite = true)
+          Status(UUID.randomUUID(), "Consignment", "OverwriteStatus", "OverwriteStatusValue", overwrite = true),
+          Status(fileId, "File", "FileStatus", "FileStatusValue", overwrite = false)
         )
       )
     ).asJson.deepDropNullValues.printWith(noSpaces)
