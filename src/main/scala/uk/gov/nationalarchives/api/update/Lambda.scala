@@ -76,9 +76,9 @@ class Lambda {
           val fileStatusVariables = amfs.Variables(AddMultipleFileStatusesInput(fsGroup.map(fs => AddFileStatusInput(fs.id, fs.statusName, fs.statusValue))))
           RequestSender[amfs.Data, amfs.Variables].sendRequest(token, amfs.document, fileStatusVariables)
         }
-        Future.sequence(resultingFutures)
+        Future.sequence(resultingFutures).map(_ => ())
       } else {
-        Future.successful(())
+        Future.unit
       }
       _ <- Future.sequence {
         consignmentStatuses.map(consignmentStatus => {
