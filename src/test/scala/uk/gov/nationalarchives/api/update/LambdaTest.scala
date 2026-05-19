@@ -13,6 +13,7 @@ import uk.gov.nationalarchives.api.update.utils.ExternalServicesTest
 import uk.gov.nationalarchives.tdr.error.HttpException
 
 import java.io.{ByteArrayInputStream, ByteArrayOutputStream}
+import java.nio.charset.StandardCharsets
 import java.util.UUID
 import scala.jdk.CollectionConverters.ListHasAsScala
 
@@ -82,7 +83,7 @@ class LambdaTest extends ExternalServicesTest {
     val inputStream = new ByteArrayInputStream(s3Input.getBytes())
     val outputStream = new ByteArrayOutputStream()
     new Lambda().update(inputStream, outputStream)
-    outputStream.toString should equal(results.asJson.printWith(noSpaces))
+    outputStream.toString(StandardCharsets.UTF_8) should equal(results.asJson.printWith(noSpaces))
 
     results.head.s3SourceBucket.get should equal("source-bucket")
     results.head.s3SourceBucketKey.get should equal("source/object/key")
