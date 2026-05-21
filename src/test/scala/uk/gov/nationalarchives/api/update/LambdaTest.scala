@@ -83,8 +83,7 @@ class LambdaTest extends ExternalServicesTest {
     val inputStream = new ByteArrayInputStream(s3Input.getBytes())
     val outputStream = new ByteArrayOutputStream()
     new Lambda().update(inputStream, outputStream)
-    val decodedOutput = decode[Input](outputStream.toString(StandardCharsets.UTF_8)).toOption.get
-    decodedOutput.results should equal(results)
+    outputStream.toString(StandardCharsets.UTF_8) should equal("")
 
     results.head.s3SourceBucket.get should equal("source-bucket")
     results.head.s3SourceBucketKey.get should equal("source/object/key")
