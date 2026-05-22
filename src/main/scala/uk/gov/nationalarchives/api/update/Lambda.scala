@@ -24,7 +24,6 @@ import uk.gov.nationalarchives.tdr.keycloak.{KeycloakUtils, TdrKeycloakDeploymen
 
 import java.io.{InputStream, OutputStream}
 import java.net.URI
-import java.nio.charset.StandardCharsets
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.DurationInt
 import scala.concurrent.{Await, Future}
@@ -122,16 +121,13 @@ class Lambda {
     val result = for {
       (input, s3Input) <- getInput(inputStream)
       resultJson = input.results.asJson.printWith(Printer.noSpaces)
-      outputJson = input.asJson.deepDropNullValues.printWith(Printer.noSpaces)
       token <- keycloakUtils.serviceAccountToken(config("client.id"), clientSecret)
       _: avbm.Data <- RequestSender[avbm.Data, avbm.Variables].sendRequest(token, avbm.document, avVariables(input))
       _: amfm.Data <- RequestSender[amfm.Data, amfm.Variables].sendRequest(token, amfm.document, amfm.Variables(AddFileMetadataWithFileIdInput(getFileMetadata(input))))
       _: abfim.Data <- RequestSender[abfim.Data, abfim.Variables].sendRequest(token, abfim.document, ffidVariables(input))
       _ <- sendStatuses(input, token)
       _ <- writeResults(resultJson, s3Input)
-    } yield {
-      output.write(outputJson.getBytes(StandardCharsets.UTF_8))
-    }
+    } yield ()
     Await.result(result, 480.seconds)
   }
 }
