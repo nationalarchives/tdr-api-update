@@ -55,6 +55,10 @@ class ExternalServicesTest extends AnyFlatSpec with BeforeAndAfterEach with Befo
       .willReturn(okJson(fromResource(s"json/checksum_response.json").mkString)))
 
     wiremockGraphqlServer.stubFor(post(urlEqualTo(graphQlPath))
+      .withRequestBody(containing("addMultipleFileStatuses"))
+      .willReturn(okJson(fromResource(s"json/file_status_response.json").mkString)))
+
+    wiremockGraphqlServer.stubFor(post(urlEqualTo(graphQlPath))
       .withRequestBody(containing("ConsignmentStatus"))
       .willReturn(okJson(fromResource(s"json/consignment_status_response.json").mkString)))
   }
