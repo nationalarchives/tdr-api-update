@@ -13,7 +13,7 @@ import io.circe.Printer
 import io.circe.generic.auto._
 import io.circe.parser.decode
 import io.circe.syntax._
-import software.amazon.awssdk.http.apache.ApacheHttpClient
+import software.amazon.awssdk.http.apache5.ApacheHttpClient
 import software.amazon.awssdk.regions.Region
 import software.amazon.awssdk.services.ssm.SsmClient
 import software.amazon.awssdk.services.ssm.model.GetParameterRequest
