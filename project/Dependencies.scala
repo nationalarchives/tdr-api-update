@@ -5,8 +5,8 @@ object Dependencies {
   private val elasticMqVersion = "1.3.14"
   private val awsUtilsVersion = "0.1.65" 
 
-  lazy val awsSsm = "software.amazon.awssdk" % "ssm" % "2.47.4"
-  lazy val backendCheckUtils = "uk.gov.nationalarchives" %% "tdr-backend-checks-utils" % "0.1.221"
+  lazy val awsSsm = "software.amazon.awssdk" % "ssm" % "2.47.5"
+  lazy val backendCheckUtils = "uk.gov.nationalarchives" %% "tdr-backend-checks-utils" % "0.1.223"
   lazy val scalaTest = "org.scalatest" %% "scalatest" % "3.2.20"
   lazy val circeCore = "io.circe" %% "circe-core" % circeVersion
   lazy val circeGeneric = "io.circe" %% "circe-generic" % circeVersion
@@ -20,5 +20,5 @@ object Dependencies {
   lazy val keycloakMock = "com.tngtech.keycloakmock" % "mock" % "0.20.0"
   lazy val mockito = "org.mockito" %% "mockito-scala" % "2.2.1"
   lazy val typesafe = "com.typesafe" % "config" % "1.4.9"
-  lazy val authUtils = "uk.gov.nationalarchives" %% "tdr-auth-utils" % "0.0.294"
+  lazy val authUtils = "uk.gov.nationalarchives" %% "tdr-auth-utils" % "0.0.295"
 }
