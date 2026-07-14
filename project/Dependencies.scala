@@ -3,22 +3,26 @@ import sbt._
 object Dependencies {
   private val circeVersion = "0.14.16"
   private val elasticMqVersion = "1.3.14"
-  private val awsUtilsVersion = "0.1.65" 
+  private val awsUtilsVersion = "0.1.65"
+  private lazy val bouncyCastleVersion = "1.85"
 
-  lazy val awsSsm = "software.amazon.awssdk" % "ssm" % "2.46.17"
-  lazy val backendCheckUtils = "uk.gov.nationalarchives" %% "tdr-backend-checks-utils" % "0.1.220"
+  lazy val awsSsm = "software.amazon.awssdk" % "ssm" % "2.47.5"
+  lazy val backendCheckUtils = "uk.gov.nationalarchives" %% "tdr-backend-checks-utils" % "0.1.223"
   lazy val scalaTest = "org.scalatest" %% "scalatest" % "3.2.20"
   lazy val circeCore = "io.circe" %% "circe-core" % circeVersion
   lazy val circeGeneric = "io.circe" %% "circe-generic" % circeVersion
   lazy val circeParser = "io.circe" %% "circe-parser" % circeVersion
-  lazy val generatedGraphql = "uk.gov.nationalarchives" %% "tdr-generated-graphql" % "0.0.477"
-  lazy val graphqlClient = "uk.gov.nationalarchives" %% "tdr-graphql-client" % "0.0.303"
+  lazy val generatedGraphql = "uk.gov.nationalarchives" %% "tdr-generated-graphql" % "0.0.479"
+  lazy val graphqlClient = "uk.gov.nationalarchives" %% "tdr-graphql-client" % "0.0.305"
   lazy val scalaLogging = "com.typesafe.scala-logging" %% "scala-logging" % "3.9.6"
-  lazy val logback = "ch.qos.logback" % "logback-classic" % "1.5.37"
+  lazy val logback = "ch.qos.logback" % "logback-classic" % "1.5.38"
   lazy val logstashLogbackEncoder = "net.logstash.logback" % "logstash-logback-encoder" % "9.0"
   lazy val wiremockStandalone = "com.github.tomakehurst" % "wiremock-standalone" % "3.0.1"
   lazy val keycloakMock = "com.tngtech.keycloakmock" % "mock" % "0.20.0"
   lazy val mockito = "org.mockito" %% "mockito-scala" % "2.2.1"
   lazy val typesafe = "com.typesafe" % "config" % "1.4.9"
-  lazy val authUtils = "uk.gov.nationalarchives" %% "tdr-auth-utils" % "0.0.291"
+  lazy val authUtils = "uk.gov.nationalarchives" %% "tdr-auth-utils" % "0.0.295"
+  lazy val bcprov = "org.bouncycastle" % "bcprov-jdk18on" % bouncyCastleVersion
+  lazy val bcpkix = "org.bouncycastle" % "bcpkix-jdk18on" % bouncyCastleVersion
+  lazy val bcutil = "org.bouncycastle" % "bcutil-jdk18on" % bouncyCastleVersion
 }
