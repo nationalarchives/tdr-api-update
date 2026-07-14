@@ -12,6 +12,7 @@ jobs:
       id-token: write
     uses: nationalarchives/tdr-github-actions/.github/workflows/lambda_build.yml@e3622e3bbb9019981b3aaf6b278b2fce0c7d812b # v.0.0.40
     with:
+      java-version: '17'
       lambda-name: api-update-v2
       repo-name: tdr-api-update
       artifact-name: api-update
