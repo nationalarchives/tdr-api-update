@@ -14,6 +14,7 @@ dependencyOverrides ++= Seq(
 
 libraryDependencies ++= Seq(
   awsSsm,
+  awsApache5Client,
   backendCheckUtils,
   circeCore,
   circeGeneric,
