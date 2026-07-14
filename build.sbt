@@ -6,6 +6,12 @@ ThisBuild / version := "0.1.0"
 ThisBuild / organization := "uk.gov.nationalarchives"
 ThisBuild / organizationName := "api-update"
 
+dependencyOverrides ++= Seq(
+  bcprov,
+  bcpkix,
+  bcutil
+)
+
 libraryDependencies ++= Seq(
   awsSsm,
   backendCheckUtils,

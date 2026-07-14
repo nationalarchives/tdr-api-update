@@ -3,7 +3,8 @@ import sbt._
 object Dependencies {
   private val circeVersion = "0.14.16"
   private val elasticMqVersion = "1.3.14"
-  private val awsUtilsVersion = "0.1.65" 
+  private val awsUtilsVersion = "0.1.65"
+  private lazy val bouncyCastleVersion = "1.85"
 
   lazy val awsSsm = "software.amazon.awssdk" % "ssm" % "2.47.5"
   lazy val backendCheckUtils = "uk.gov.nationalarchives" %% "tdr-backend-checks-utils" % "0.1.223"
@@ -21,4 +22,7 @@ object Dependencies {
   lazy val mockito = "org.mockito" %% "mockito-scala" % "2.2.1"
   lazy val typesafe = "com.typesafe" % "config" % "1.4.9"
   lazy val authUtils = "uk.gov.nationalarchives" %% "tdr-auth-utils" % "0.0.295"
+  lazy val bcprov = "org.bouncycastle" % "bcprov-jdk18on" % bouncyCastleVersion
+  lazy val bcpkix = "org.bouncycastle" % "bcpkix-jdk18on" % bouncyCastleVersion
+  lazy val bcutil = "org.bouncycastle" % "bcutil-jdk18on" % bouncyCastleVersion
 }
