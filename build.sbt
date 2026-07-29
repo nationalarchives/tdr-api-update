@@ -6,6 +6,12 @@ ThisBuild / version := "0.1.0"
 ThisBuild / organization := "uk.gov.nationalarchives"
 ThisBuild / organizationName := "api-update"
 
+dependencyOverrides ++= Seq(
+  bcprov,
+  bcpkix,
+  bcutil
+)
+
 libraryDependencies ++= Seq(
   awsSsm,
   backendCheckUtils,
@@ -34,3 +40,6 @@ libraryDependencies ++= Seq(
   case _ => MergeStrategy.first
 }
 (assembly / assemblyJarName) := "api-update.jar"
+(assembly / assemblyOutputPath) := Def.uncached{
+  baseDirectory.value / "target" / "scala-2.13" / (assembly / assemblyJarName).value
+}
