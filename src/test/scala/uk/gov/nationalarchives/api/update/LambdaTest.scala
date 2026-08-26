@@ -216,7 +216,7 @@ class LambdaTest extends ExternalServicesTest {
         s3CleanDestinationBucketKey,
         FileCheckResults(av, checksum, ffid)
       )),
-      RedactedResults(RedactedFilePairs(UUID.randomUUID(), "original", fileId, "redacted") :: Nil, Nil),
+      RedactedResults(RedactedFilePairs(Some(UUID.randomUUID()), "original", fileId, "redacted") :: Nil, Nil),
       StatusResult(
         List(
           Status(UUID.randomUUID(), "Consignment", "Status", "StatusValue", overwrite = false),
