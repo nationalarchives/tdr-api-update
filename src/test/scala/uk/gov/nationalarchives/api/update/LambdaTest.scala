@@ -121,6 +121,19 @@ class LambdaTest extends ExternalServicesTest {
     results.head.s3SourceBucketKey should equal(None)
   }
 
+  "The update method" should "not error when there is no original file id" in {
+    val fileId = UUID.fromString("2ecc4d46-9c8b-46cd-b2a4-8ac2a52001b3")
+    val s3Input = setupS3(fileId, redactedOriginalFileId = None)
+    authOkJson()
+    graphqlOkJson()
+    val inputStream = new ByteArrayInputStream(s3Input.getBytes())
+    val outputStream = new ByteArrayOutputStream()
+    new Lambda().update(inputStream, outputStream)
+
+    val serveEvents = wiremockGraphqlServer.getAllServeEvents.asScala
+    serveEvents.count(_.getRequest.getBodyAsString.contains("addMultipleFileMetadata")) should equal(1)
+  }
+
   "The getInputs method" should "return the correct results for valid json" in {
     val fileId = UUID.randomUUID()
     val s3Input = setupS3(fileId, Some("source-bucket"), Some("source/object/key"))
@@ -177,8 +190,9 @@ class LambdaTest extends ExternalServicesTest {
               s3QuarantineBucket: Option[String] = None,
               s3QuarantineBucketKey: Option[String] = None,
               s3CleanDestinationBucket: Option[String] = None,
-              s3CleanDestinationBucketKey: Option[String] = None): String = {
-    val inputJson = getInputJson(fileId, s3SourceBucket, s3SourceBucketKey, s3QuarantineBucket, s3QuarantineBucketKey, s3CleanDestinationBucket, s3CleanDestinationBucketKey)
+              s3CleanDestinationBucketKey: Option[String] = None,
+              redactedOriginalFileId: Option[UUID] = Some(UUID.randomUUID())): String = {
+    val inputJson = getInputJson(fileId, s3SourceBucket, s3SourceBucketKey, s3QuarantineBucket, s3QuarantineBucketKey, s3CleanDestinationBucket, s3CleanDestinationBucketKey, redactedOriginalFileId)
     val s3Input = S3Input("testKey", "testBucket")
     putJsonFile(s3Input, inputJson).asJson.printWith(noSpaces)
   }
@@ -195,7 +209,8 @@ class LambdaTest extends ExternalServicesTest {
                            s3QuarantineBucket: Option[String],
                            s3QuarantineBucketKey: Option[String],
                            s3CleanDestinationBucket: Option[String],
-                           s3CleanDestinationBucketKey: Option[String]): String = {
+                           s3CleanDestinationBucketKey: Option[String],
+                           redactedOriginalFileId: Option[UUID]): String = {
     val ffidMatch = FFIDMetadataInputMatches(Some("txt"), "Some basis", Some("x-fmt/111"), Some(false), Some("format-name"))
     val ffid = FFID(fileId, "software", "softwareVersion", "binarySignatureFileVersion", "containerSignatureFileVersion", "method", ffidMatch :: Nil) :: Nil
     val checksum = ChecksumResult("checksum", fileId) :: Nil
@@ -216,7 +231,7 @@ class LambdaTest extends ExternalServicesTest {
         s3CleanDestinationBucketKey,
         FileCheckResults(av, checksum, ffid)
       )),
-      RedactedResults(RedactedFilePairs(Some(UUID.randomUUID()), "original", fileId, "redacted") :: Nil, Nil),
+      RedactedResults(RedactedFilePairs(redactedOriginalFileId, "original", fileId, "redacted") :: Nil, Nil),
       StatusResult(
         List(
           Status(UUID.randomUUID(), "Consignment", "Status", "StatusValue", overwrite = false),
