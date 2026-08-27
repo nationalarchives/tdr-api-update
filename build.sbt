@@ -42,3 +42,6 @@ libraryDependencies ++= Seq(
   case _ => MergeStrategy.first
 }
 (assembly / assemblyJarName) := "api-update.jar"
+assembly / assemblyOutputPath := Def.uncached {
+  baseDirectory.value / "target" / "scala-2.13" / (assembly / assemblyJarName).value
+}
