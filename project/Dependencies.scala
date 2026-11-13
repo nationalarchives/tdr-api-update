@@ -6,7 +6,7 @@ object Dependencies {
   private val awsUtilsVersion = "0.1.65"
   private lazy val bouncyCastleVersion = "1.87"
 
-  lazy val awsSsm = "software.amazon.awssdk" % "ssm" % "2.57.12"
+  lazy val awsSsm = "software.amazon.awssdk" % "ssm" % "2.57.13"
   lazy val backendCheckUtils = "uk.gov.nationalarchives" %% "tdr-backend-checks-utils" % "0.1.251"
   lazy val scalaTest = "org.scalatest" %% "scalatest" % "3.2.20"
   lazy val circeCore = "io.circe" %% "circe-core" % circeVersion
