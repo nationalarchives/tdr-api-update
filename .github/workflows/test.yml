@@ -12,10 +12,9 @@ jobs:
   test:
     uses: nationalarchives/tdr-github-actions/.github/workflows/tdr_test.yml@51a06bbc08eb65018238b144d0ad8bfd707a8ffa # v.0.0.50
     with:
-      java-version: $JAVA_RUNTIME
+      java-version: ${{secrets.JAVA_RUNTIME}}
       repo-name: tdr-api-update
       test-command: |
         sbt test
     secrets:
       SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-      JAVA_RUNTIME: ${{ secrets.JAVA_RUNTIME }}
