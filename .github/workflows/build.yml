@@ -12,14 +12,13 @@ jobs:
       id-token: write
     uses: nationalarchives/tdr-github-actions/.github/workflows/lambda_build.yml@51a06bbc08eb65018238b144d0ad8bfd707a8ffa # v.0.0.50
     with:
-      java-version: $JAVA_RUNTIME
+      java-version: ${{ vars.JAVA_RUNTIME }}
       lambda-name: api-update-v2
       repo-name: tdr-api-update
       artifact-name: api-update
       build-command: |
         sbt assembly
     secrets:
-      JAVA_RUNTIME: ${{secrets.JAVA_RUNTIME}}
       MANAGEMENT_ACCOUNT: ${{ secrets.MANAGEMENT_ACCOUNT }}
       WORKFLOW_PAT: ${{ secrets.WORKFLOW_PAT }}
   deploy:
