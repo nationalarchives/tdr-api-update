@@ -34,3 +34,4 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.WORKFLOW_PAT }}
           NEXT_VERSION: ${{ needs.pre-deploy.outputs.next-version }}
+          
