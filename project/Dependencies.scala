@@ -6,20 +6,20 @@ object Dependencies {
   private val awsUtilsVersion = "0.1.65"
   private lazy val bouncyCastleVersion = "1.87"
 
-  lazy val awsSsm = "software.amazon.awssdk" % "ssm" % "2.57.13"
-  lazy val backendCheckUtils = "uk.gov.nationalarchives" %% "tdr-backend-checks-utils" % "0.1.251"
+  lazy val awsSsm = "software.amazon.awssdk" % "ssm" % "2.59.7"
+  lazy val backendCheckUtils = "uk.gov.nationalarchives" %% "tdr-backend-checks-utils" % "0.1.252"
   lazy val scalaTest = "org.scalatest" %% "scalatest" % "3.2.20"
   lazy val circeCore = "io.circe" %% "circe-core" % circeVersion
   lazy val circeGeneric = "io.circe" %% "circe-generic" % circeVersion
   lazy val circeParser = "io.circe" %% "circe-parser" % circeVersion
-  lazy val generatedGraphql = "uk.gov.nationalarchives" %% "tdr-generated-graphql" % "0.0.496"
-  lazy val graphqlClient = "uk.gov.nationalarchives" %% "tdr-graphql-client" % "0.0.308"
+  lazy val generatedGraphql = "uk.gov.nationalarchives" %% "tdr-generated-graphql" % "0.0.498"
+  lazy val graphqlClient = "uk.gov.nationalarchives" %% "tdr-graphql-client" % "0.0.309"
   lazy val scalaLogging = "com.typesafe.scala-logging" %% "scala-logging" % "3.9.6"
-  lazy val logback = "ch.qos.logback" % "logback-classic" % "1.6.6"
+  lazy val logback = "ch.qos.logback" % "logback-classic" % "1.6.8"
   lazy val logstashLogbackEncoder = "net.logstash.logback" % "logstash-logback-encoder" % "9.0"
   lazy val wiremockStandalone = "com.github.tomakehurst" % "wiremock-standalone" % "3.0.1"
   lazy val keycloakMock = "com.tngtech.keycloakmock" % "mock" % "0.22.0"
-  lazy val mockito = "org.mockito" %% "mockito-scala" % "2.2.3"
+  lazy val mockito = "org.mockito" %% "mockito-scala" % "2.2.4"
   lazy val typesafe = "com.typesafe" % "config" % "1.4.10"
   lazy val authUtils = "uk.gov.nationalarchives" %% "tdr-auth-utils" % "0.0.309"
   lazy val bcprov = "org.bouncycastle" % "bcprov-jdk18on" % bouncyCastleVersion
