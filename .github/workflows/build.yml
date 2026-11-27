@@ -36,6 +36,7 @@ jobs:
       artifact-name: api-update
       environment: ${{ inputs.environment }}
       snapshot: ${{ inputs.snapshot }}
+      account-regional-code-bucket: true
       build-command: |
         sbt assembly
     secrets:
