@@ -23,12 +23,13 @@ permissions:
   contents: write
 jobs:
   deploy:
-    uses: nationalarchives/tdr-github-actions/.github/workflows/lambda_deploy.yml@cd62f21505397a0dc62bda0384f0101f7ccaca2a # v0.0.54
+    uses: nationalarchives/tdr-github-actions/.github/workflows/lambda_deploy.yml@714115ab533f9f6b0b4fed5a4293e9d57c2b89d8 # v0.0.54
     with:
       lambda-name: api-update-v2
       deployment-package: api-update.jar
       environment: ${{ github.event.inputs.environment }}
       to-deploy: ${{ github.event.inputs.to-deploy }}
+      account-regional-code-bucket: true
     secrets:
       ACCOUNT_NUMBER: ${{ secrets.ACCOUNT_NUMBER }}
       MANAGEMENT_ACCOUNT: ${{ secrets.MANAGEMENT_ACCOUNT }}
