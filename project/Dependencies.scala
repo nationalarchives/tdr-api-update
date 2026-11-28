@@ -6,7 +6,7 @@ object Dependencies {
   private val awsUtilsVersion = "0.1.65"
   private lazy val bouncyCastleVersion = "1.87"
 
-  lazy val awsSsm = "software.amazon.awssdk" % "ssm" % "2.59.9"
+  lazy val awsSsm = "software.amazon.awssdk" % "ssm" % "2.59.11"
   lazy val backendCheckUtils = "uk.gov.nationalarchives" %% "tdr-backend-checks-utils" % "0.1.253"
   lazy val scalaTest = "org.scalatest" %% "scalatest" % "3.2.20"
   lazy val circeCore = "io.circe" %% "circe-core" % circeVersion
@@ -21,7 +21,7 @@ object Dependencies {
   lazy val keycloakMock = "com.tngtech.keycloakmock" % "mock" % "0.22.0"
   lazy val mockito = "org.mockito" %% "mockito-scala" % "2.2.4"
   lazy val typesafe = "com.typesafe" % "config" % "1.4.10"
-  lazy val authUtils = "uk.gov.nationalarchives" %% "tdr-auth-utils" % "0.0.309"
+  lazy val authUtils = "uk.gov.nationalarchives" %% "tdr-auth-utils" % "0.0.310"
   lazy val bcprov = "org.bouncycastle" % "bcprov-jdk18on" % bouncyCastleVersion
   lazy val bcpkix = "org.bouncycastle" % "bcpkix-jdk18on" % bouncyCastleVersion
   lazy val bcutil = "org.bouncycastle" % "bcutil-jdk18on" % bouncyCastleVersion
